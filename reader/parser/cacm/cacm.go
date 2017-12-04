@@ -7,6 +7,9 @@ import (
 	"strconv"
 )
 
+// Change here the path to CACM folder
+var folderPath = "./consignes/Data/CACM/"
+
 type part struct {
 	category string
 	tokens []string
@@ -17,30 +20,27 @@ type Document struct {
 	id int
 	partList []part
 }
+
 // Read stop words file
-var folderPath = "./consignes/Data/CACM/"
 var stopListFile = fileToString(folderPath + "common_words")
 var stopList = strings.Split(stopListFile, "\n")
 
 // ParseDocuments : Parse CACM documents
 func ParseDocuments(folderPath string) []Document {
+	// Read documents file
+	var dataFile = fileToString(folderPath + "cacm.all") // Change this to handle bigger files
 	// Create output variable
 	var documents []Document
 	// var reversedIndex map[string]map[string]int
 
-	
-		
-	// Read documents file
-	fileString := fileToString(folderPath + "cacm.all") // Change this to handle bigger files
-
 	// Split the files in documents
 	regexDoc := regexp.MustCompile(".I ([0-9]*)\n")
-	docs := regexDoc.Split(fileString, -1)
-	docsNum := regexDoc.FindAllStringSubmatch(fileString, -1)
+	docs := regexDoc.Split(dataFile, -1)
+	docsNum := regexDoc.FindAllStringSubmatch(dataFile, -1)
 	
 	// Iterate over the documents and parse them
 	for i, doc := range docs {
-		if doc != "" {
+		if doc != "" { // TODO: Check how to avoid having an empty document
 			// Create the document data structure
 			partList := parseDocument(doc)	
 			docID, err := strconv.Atoi(docsNum[i-1][1])
