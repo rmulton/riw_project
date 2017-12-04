@@ -25,10 +25,10 @@ type Document struct {
 var stopListFile = fileToString(folderPath + "common_words")
 var stopList = strings.Split(stopListFile, "\n")
 // Output variable
-var reversedIndex map[string]map[string]int
+var reversedIndex = make(map[string][]int)
 
 // ParseDocuments : Parse CACM documents
-func ParseDocuments(folderPath string) []Document {
+func ParseDocuments(folderPath string) map[string][]int {
 	// Read documents file
 	var dataFile = fileToString(folderPath + "cacm.all") // Change this to handle bigger files
 	// Create output variable
@@ -43,8 +43,8 @@ func ParseDocuments(folderPath string) []Document {
 	for i, doc := range docs {
 		if doc != "" { // TODO: Check how to avoid having an empty document
 			// Create the document data structure
-			partList := parseDocument(doc)	
 			docID, err := strconv.Atoi(docsNum[i-1][1])
+			partList := parseDocument(doc, docID)	
 			if err == nil {
 				parsedDoc := Document{docID, partList}
 				documents = append(documents, parsedDoc)
@@ -52,26 +52,18 @@ func ParseDocuments(folderPath string) []Document {
 		}
 	}
 
-	return documents
+	return reversedIndex
 }
 
-func parsePart(content string) []string {
-	// Create output variable
-	var loweredTokens []string
-
+func parsePart(content string, docID int) []string {
 	// Split content into tokens
 	tokens := strings.FieldsFunc(content, func(r rune) bool {
-		return r == ' ' || r == '.' || r == '\n' || r == ','
+		return r == ' ' || r == '.' || r == '\n' || r == ',' || r == '?' || r == '!' || r == '(' || r == ')' || r == '*' || r == ';' || r == '"' || r == '\'' || r == ':' || r == '{' || r == '}'
 	})
 
-	// Tokens to lower case
-	for _, token := range tokens {
-		lowered := strings.ToLower(token)
-		loweredTokens = append(loweredTokens, lowered)
-	}
-	
-	loweredTokens = removeUnsignificantTokens(loweredTokens)
-	return loweredTokens
+	addSignificantTokens(tokens, docID)
+
+	return tokens
 }
 
 func fileToString(filePath string) string {
@@ -83,18 +75,20 @@ func fileToString(filePath string) string {
 	return fileString
 }
 
-func removeUnsignificantTokens(tokens []string) []string {
-	// Create output variable
-	var significantTokens []string
-
+func addSignificantTokens(tokens []string, docID int) {
 	// Get significant words
 	for _, token := range tokens {
+		token = strings.ToLower(token)
 		if isSignificant(token) {
-			significantTokens = append(significantTokens, token)
+			_, exists := reversedIndex[token]
+			if exists {
+				reversedIndex[token] = append(reversedIndex[token], docID)
+			} else {
+				reversedIndex[token] = []int{docID}
+			}
 		}
 	}
 
-	return significantTokens
 }
 
 func isSignificant(token string) bool {
@@ -107,7 +101,7 @@ func isSignificant(token string) bool {
 	return true
 }
 
-func parseDocument(doc string) []part {
+func parseDocument(doc string, docID int) []part {
 	// Create output variable
 	var partList []part
 
@@ -119,10 +113,12 @@ func parseDocument(doc string) []part {
 	// Add part to doc data structure
 	for j, partName := range partsName {
 		partName := partName[1]
-		partContent := partsContent[j+1]
-		partTokens := parsePart(partContent)
-		part := part{partName, partTokens}
-		partList = append(partList, part)
+		if partName == "T" || partName == "W" || partName == "K" {
+			partContent := partsContent[j+1]
+			partTokens := parsePart(partContent, docID)
+			part := part{partName, partTokens}
+			partList = append(partList, part)
+		}
 	}
 	
 	return partList

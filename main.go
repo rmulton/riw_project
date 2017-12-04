@@ -7,6 +7,8 @@ import (
 
 func main() {
 	filePath := "./consignes/Data/CACM/"
-	parsedDocs := cacm.ParseDocuments(filePath)
-	fmt.Println("Done", parsedDocs[62])
+	reversedIndex := cacm.ParseDocuments(filePath)
+	for k, v := range reversedIndex {
+		fmt.Println(k, ":", v, "\n\n")
+	}
 }
