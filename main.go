@@ -16,14 +16,14 @@ type document struct {
 }
 
 func parseDocuments (filePath string) []document {
-	dat, err := ioutil.ReadFile(filePath)
+	// Create output variable
+	var output []document
 	
+	// Read the file
+	dat, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		panic(err)
 	}
-	
-	var output []document
-	
 	fileString := string(dat) // Change this to handle bigger files
 
 	// Split the files in documents
@@ -31,19 +31,23 @@ func parseDocuments (filePath string) []document {
 	docs := regexDoc.Split(fileString, -1)
 	docsNum := regexDoc.FindAllStringSubmatch(fileString, -1)
 	
+	// Iterate over the documents and parse them
 	for i, doc := range docs {
 		if doc != "" {
-			// Create doc data structure
+			// Create the document data structure
 			partList := parseDocument(doc)	
 			parsedDoc := document{docsNum[i-1][1], partList}
 			output = append(output, parsedDoc)
 		}
 	}
+
 	return output
 }
 
 func parseDocument(doc string) []part {
+	// Create output variable
 	var partList []part
+
 	// Split the doc in parts
 	regexDocPart := regexp.MustCompile("\\.([A-Z])\n")
 	partsContent := regexDocPart.Split(doc, -1)
@@ -62,6 +66,6 @@ func parseDocument(doc string) []part {
 
 func main() {
 	filePath := "./consignes/Data/CACM/cacm.all"
-	parsedDoc := parseDocuments(filePath)
-	fmt.Println("Done", parsedDoc[0])
+	parsedDocs := parseDocuments(filePath)
+	fmt.Println("Done", parsedDocs[0])
 }
