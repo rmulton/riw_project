@@ -24,6 +24,8 @@ type Document struct {
 // Read stop words file
 var stopListFile = fileToString(folderPath + "common_words")
 var stopList = strings.Split(stopListFile, "\n")
+// Output variable
+var reversedIndex map[string]map[string]int
 
 // ParseDocuments : Parse CACM documents
 func ParseDocuments(folderPath string) []Document {
@@ -31,7 +33,6 @@ func ParseDocuments(folderPath string) []Document {
 	var dataFile = fileToString(folderPath + "cacm.all") // Change this to handle bigger files
 	// Create output variable
 	var documents []Document
-	// var reversedIndex map[string]map[string]int
 
 	// Split the files in documents
 	regexDoc := regexp.MustCompile(".I ([0-9]*)\n")
@@ -67,9 +68,9 @@ func parsePart(content string) []string {
 	for _, token := range tokens {
 		lowered := strings.ToLower(token)
 		loweredTokens = append(loweredTokens, lowered)
-		loweredTokens = removeUnsignificantTokens(loweredTokens)
 	}
-
+	
+	loweredTokens = removeUnsignificantTokens(loweredTokens)
 	return loweredTokens
 }
 
