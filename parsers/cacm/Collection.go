@@ -17,6 +17,10 @@ type Collection struct {
 	StopList []string // Need to be stored to avoid computation
 }
 
+func NewCollection(dataFolderPath string) Collection {
+	return Collection{dataFolderPath, make(indexes.ReversedIndex), []string{}}
+}
+
 func (collection Collection) ComputeIndex() {
 	// Read documents file
 	var dataFile = collection.getData() // Change this to handle bigger files
