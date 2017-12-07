@@ -7,16 +7,16 @@ import (
 
 // ReversedIndex stores the index built by a parser.
 // 
-//	{
-//		"toto": {
-//			1234: 4,
-//			23: 1,				// ReversedIndex structure
-//			34: 10,
-//			...
-//		},
-//
-//		...
-//	}
+//		{
+//				"toto": {
+//					1234: 4,
+//					23: 1,				// ReversedIndex structure
+//					34: 10,
+//					...
+//				},
+//		
+//				...
+//			}
 type ReversedIndex map[string]map[int]int
 
 func (index ReversedIndex) String() string {
