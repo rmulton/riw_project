@@ -2,13 +2,15 @@ package main
 
 import (
 	"fmt"
-	"./reader/parser/cacm"
+	"./parsers/cacm"
+	"./indexes"
 )
 
 func main() {
-	filePath := "./consignes/Data/CACM/"
-	reversedIndex := cacm.ParseDocuments(filePath)
-	for k, v := range reversedIndex {
-		fmt.Println(k, ":", v, "\n\n")
-	}
+	// Get a reversed dictionnary of relevant terms
+	// reversedIndex := cacm.ParseDocuments()
+	collection := cacm.Collection{"./consignes/Data/CACM/", make(indexes.ReversedIndex), []string{}}
+	collection.ComputeIndex()
+	fmt.Print(collection.Index)
+
 }
