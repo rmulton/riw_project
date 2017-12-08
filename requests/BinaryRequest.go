@@ -9,13 +9,17 @@ type BinaryRequest struct {
 	input string
 	index indexes.ReversedIndex
 	ands [][]string
+	Output map[int]int 
 }
 
 func NewBinaryRequest(input string, index indexes.ReversedIndex) BinaryRequest {
-	return BinaryRequest{input, index, [][]string{}}
+	request := BinaryRequest{input, index, [][]string{}, make(map[int]int)}
+	request.parse()
+	request.computeOutput()
+	return request
 }
 
-func (request BinaryRequest) parse() BinaryRequest {
+func (request *BinaryRequest) parse() { // TODO : retirer stopwords, mots en double
 	andRegex := regexp.MustCompile("[a-z]+[ AND [a-z]+]*")	
 	ands := andRegex.FindAllString(request.input, -1)
 	for _, and := range ands {
@@ -23,15 +27,12 @@ func (request BinaryRequest) parse() BinaryRequest {
 		terms := wordRegex.FindAllString(and, -1)
 		request.ands = append(request.ands, terms)
 	}
-	return request
 }
 
-func (request BinaryRequest) Compute() map[int]int {
-	// Parse the request
-	request = request.parse()
+func (request *BinaryRequest) computeOutput() {
 	// Find the output
 	output := request.computeRequest()
-	return output
+	request.Output = output
 }
 
 func (request BinaryRequest) computeRequest() map[int]int {
