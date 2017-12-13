@@ -68,17 +68,9 @@ func TestExampleBinaryRequests(t *testing.T) {
 	for _, testRequest := range testRequests {
 		input := testRequest.input
 		binaryRequest := NewBinaryRequest(input, index)
-		foundDocIDs := binaryRequest.Output
-		for key, _ := range foundDocIDs {
-			for _, expectedDocId := range testRequest.docIDs {
-				if key == expectedDocId {
-					delete(foundDocIDs, key)
-				}
-			}
-		}
-		for key, _ := range foundDocIDs {
-			if len(foundDocIDs) != 0 {
-				t.Errorf("Found unexpected document with id %d for request %s", key, binaryRequest.input)
+		if !reflect.DeepEqual(binaryRequest.Output, testRequest.docIDs) {
+			if len(binaryRequest.Output)>0 || len(testRequest.docIDs)>0 {
+				t.Errorf("Found documents %v for '%s', should be %v", binaryRequest.Output, input, testRequest.docIDs)
 			}
 		}
 	}
@@ -88,8 +80,13 @@ func TestEqualBinaryRequests(t *testing.T) {
 	for _, equalTestRequest := range equalTestRequests {
 		binaryRequest1 := NewBinaryRequest(equalTestRequest[0], index)
 		binaryRequest2 := NewBinaryRequest(equalTestRequest[1], index)
-		for docID, _ := range binaryRequest1.Output {  // TODO : replace with reflect.DeepEqual to take frqc into account, and change to avoid adding the same frqc several times
-			_, exists := binaryRequest2.Output[docID]
+		for _, docID := range binaryRequest1.Output {  // TODO : replace with reflect.DeepEqual to take frqc into account, and change to avoid adding the same frqc several times
+			exists := false
+			for _, foundDocID := range binaryRequest2.Output {
+				if docID == foundDocID {
+					exists = true
+				}
+			}
 			if !exists {
 				t.Errorf("'%s' don't output doc %d as '%s' does", binaryRequest1.input, docID, binaryRequest2.input)
 			}
@@ -118,4 +115,31 @@ func TestParseRequest(t *testing.T) {
 			t.Errorf("Parser output for '%s' is %v, expected %v", input, binaryRequest.ands, parseTestRequest.ands)
 		}
 	}
+}
+
+type testSortedDocID struct {
+	docIDs map[int]float64
+	sortedDocIDList []int // Can it has a problem since there are several solutions ?
+}
+
+var testSortedDocIDs = []testSortedDocID{
+	testSortedDocID{
+		map[int]float64{
+			23: 1,
+			24: 2,
+			834823: 56,
+			1: 9,
+		},
+		[]int{834823, 1, 24, 23},
+	},
+}
+
+func TestNewUserOutput(t *testing.T) {
+	for _, testSortedDocID := range testSortedDocIDs {
+		sortedDocIDs := getSortedDocList(testSortedDocID.docIDs)
+		if !reflect.DeepEqual(sortedDocIDs, testSortedDocID.sortedDocIDList) {
+			t.Errorf("%v is sorted %v, should be %v", testSortedDocID.docIDs, sortedDocIDs, testSortedDocID.sortedDocIDList)
+		}
+	}
+
 }

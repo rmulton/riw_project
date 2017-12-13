@@ -1,6 +1,7 @@
 package requests
 
 import (
+	"sort"
 	"regexp"
 	"../indexes"
 )
@@ -9,11 +10,11 @@ type BinaryRequest struct {
 	input string
 	index indexes.ReversedIndex
 	ands [][]string
-	Output map[int]int 
+	Output []int
 }
 
 func NewBinaryRequest(input string, index indexes.ReversedIndex) BinaryRequest {
-	request := BinaryRequest{input, index, [][]string{}, make(map[int]int)}
+	request := BinaryRequest{input, index, [][]string{}, []int{}}
 	request.parse()
 	request.computeOutput()
 	return request
@@ -31,13 +32,37 @@ func (request *BinaryRequest) parse() { // TODO : retirer stopwords, mots en dou
 
 func (request *BinaryRequest) computeOutput() {
 	// Find the output
-	output := request.computeRequest()
-	request.Output = output
+	docsFrqc := request.computeRequest()
+	request.Output = getSortedDocList(docsFrqc)
 }
 
-func (request BinaryRequest) computeRequest() map[int]int {
+// Transform a dictionnary of docIDS:frqc to a docIDs list sorted on frqc
+func getSortedDocList(docsFrqc map[int]float64) []int {
+	// Get the reverse map
+	reversedDocsFrqc := make(map[float64][]int)
+	for k, v := range docsFrqc {
+		reversedDocsFrqc[v] = append(reversedDocsFrqc[v], k)
+	}
+	// Sort the values in decreasing order
+	var frqcs []float64
+	for k, _ := range reversedDocsFrqc {
+		frqcs = append(frqcs, k)
+	}
+	sort.Sort(sort.Reverse(sort.Float64Slice(frqcs)))
+	// Get the output in a list
+	var sortedDocIDs []int
+	for _, frqc := range frqcs {
+		// Append to output list
+		for _, docID := range reversedDocsFrqc[frqc] {
+			sortedDocIDs = append(sortedDocIDs, docID)
+		}
+	}
+	return sortedDocIDs
+}
+
+func (request *BinaryRequest) computeRequest() map[int]float64 {
 	// Output variable
-	var output = make(map[int]int)
+	var output = make(map[int]float64)
 
 	// For each and condition
 	for _, andCondition:= range request.ands {

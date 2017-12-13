@@ -48,7 +48,9 @@ func (collection Collection) computeIndexForDocs(docs []string, docsNum [][]stri
 			collection.computeIndexForDoc(doc, docID)	
 		}
 	}
-
+	// When the index is done, get from linear frequency to log frequency
+	collection.Index.FrqcToLogFrqc()
+	
 }
 
 func (collection Collection) computeIndexForDoc(doc string, docID int) {
@@ -85,7 +87,7 @@ func (collection Collection) addSignificantTokensToIndex(tokens []string, docID 
 			// Add token to the list of keys if necessary
 			_, exists := index[token]
 			if !exists {
-				tokenDict := make(map[int]int)
+				tokenDict := make(map[int]float64)
 				index[token] = tokenDict
 				index[token][docID] = 0
 			}

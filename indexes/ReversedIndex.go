@@ -3,6 +3,7 @@ package indexes
 import (
 	"fmt"
 	"sort"
+	"math"
 )
 
 // ReversedIndex stores the index built by a parser.
@@ -17,7 +18,7 @@ import (
 //		
 //				...
 //			}
-type ReversedIndex map[string]map[int]int
+type ReversedIndex map[string]map[int]float64
 
 func (index ReversedIndex) String() string {
 	// Output variable
@@ -37,4 +38,16 @@ func (index ReversedIndex) String() string {
 	}
 		
 	return output
+}
+
+func (index ReversedIndex) FrqcToLogFrqc() {
+	// Iterate over the index
+	for word, docFrqcs := range index {
+		// Iterate over the documents/frqc map of the word
+		for docID, frqc := range docFrqcs {
+			index[word][docID] = math.Log10(frqc)
+		}
+
+	}
+
 }
