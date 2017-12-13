@@ -19,11 +19,11 @@ func NewBinaryRequest(input string, index indexes.ReversedIndex) BinaryRequest {
 	return request
 }
 
-func (request *BinaryRequest) parse() { // TODO : retirer stopwords, mots en double
-	andRegex := regexp.MustCompile("[a-z]+[ AND [a-z]+]*")	
+func (request *BinaryRequest) parse() { // TODO : retirer stopwords, mots en double, 36-Bit = 36-bit
+	andRegex := regexp.MustCompile("[0-9A-z\\-]+[ & [0-9A-z\\-]+]*")	
 	ands := andRegex.FindAllString(request.input, -1)
 	for _, and := range ands {
-		wordRegex := regexp.MustCompile("[a-z]+")
+		wordRegex := regexp.MustCompile("[0-9A-z\\-]+")
 		terms := wordRegex.FindAllString(and, -1)
 		request.ands = append(request.ands, terms)
 	}

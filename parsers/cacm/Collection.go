@@ -10,30 +10,32 @@ import (
 
 // Collection
 // Stores the path to the data folder, the index and the stop list.
-// Initiate with empty Index and StopList, they are computed in ComputeIndex()
+// Initiate with empty Index and stopList, they are computed in ComputeIndex()
 type Collection struct {
-	Path string
+	path string
 	Index indexes.ReversedIndex
-	StopList []string // Need to be stored to avoid computation
+	stopList []string // Need to be stored to avoid computation
 }
 
 func NewCollection(dataFolderPath string) Collection {
-	return Collection{dataFolderPath, make(indexes.ReversedIndex), []string{}}
+	collection := Collection{dataFolderPath, make(indexes.ReversedIndex), []string{}}
+	collection.computeIndex() // the index is stored in a collection object to avoid multiple function arguments
+	return collection
 }
 
-func (collection Collection) ComputeIndex() {
+func (collection Collection) computeIndex() {
 	// Read documents file
 	var dataFile = collection.getData() // Change this to handle bigger files
 	
 	// Split the files in documents
-	regexDoc := regexp.MustCompile("\\.I ([0-9]*)\n")
+	regexDoc := regexp.MustCompile("\\.I ([0-9]+)\n")
 	docs := regexDoc.Split(dataFile, -1)
 	docsNum := regexDoc.FindAllStringSubmatch(dataFile, -1)
 	
 	collection.computeIndexForDocs(docs, docsNum)
 }
 
-func (collection Collection) computeIndexForDocs (docs []string, docsNum [][]string) {
+func (collection Collection) computeIndexForDocs(docs []string, docsNum [][]string) {
 	collection.setStopList()
 	// Iterate over the documents and parse them
 	for i, doc := range docs {
@@ -49,7 +51,7 @@ func (collection Collection) computeIndexForDocs (docs []string, docsNum [][]str
 
 }
 
-func (collection Collection) computeIndexForDoc (doc string, docID int) {
+func (collection Collection) computeIndexForDoc(doc string, docID int) {
 	// Split the doc in parts
 	regexDocPart := regexp.MustCompile("\\.([A-Z])\n")
 	partsContent := regexDocPart.Split(doc, -1)
@@ -65,7 +67,7 @@ func (collection Collection) computeIndexForDoc (doc string, docID int) {
 	}
 }
 
-func (collection Collection) computeIndexForPart (partContent string, docID int) {
+func (collection Collection) computeIndexForPart(partContent string, docID int) {
 	// Split content into tokens
 	tokens := strings.FieldsFunc(partContent, func(r rune) bool {
 		return r == ' ' || r == '.' || r == '\n' || r == ',' || r == '?' || r == '!' || r == '(' || r == ')' || r == '*' || r == ';' || r == '"' || r == '\'' || r == ':' || r == '{' || r == '}' || r == '/' || r == '|'
@@ -73,7 +75,7 @@ func (collection Collection) computeIndexForPart (partContent string, docID int)
 	collection.addSignificantTokensToIndex(tokens, docID)
 }
 
-func (collection Collection) addSignificantTokensToIndex (tokens []string, docID int) {
+func (collection Collection) addSignificantTokensToIndex(tokens []string, docID int) {
 	// Copy the index
 	index := collection.Index
 	// Get significant words
@@ -92,9 +94,9 @@ func (collection Collection) addSignificantTokensToIndex (tokens []string, docID
 	}
 }
 
-func (collection Collection) isSignificant (token string) bool {
+func (collection Collection) isSignificant(token string) bool {
 	// TODO : inefficient
-	for _, unsignificantWord := range collection.StopList {
+	for _, unsignificantWord := range collection.stopList {
 		if token == unsignificantWord {
 			return false
 		}
@@ -104,13 +106,13 @@ func (collection Collection) isSignificant (token string) bool {
 
 func (collection Collection) setStopList() {
 	// Read stop words file
-	var stopListFile = fileToString(collection.Path + "common_words")
+	var stopListFile = fileToString(collection.path + "common_words")
 	var stopList = strings.Split(stopListFile, "\n")
-	collection.StopList = stopList
+	collection.stopList = stopList
 }
 
 func (collection Collection) getData() string {
-	return fileToString(collection.Path + "cacm.all")
+	return fileToString(collection.path + "cacm.all")
 }
 
 func fileToString(filePath string) string {
