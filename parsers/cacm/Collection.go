@@ -1,11 +1,10 @@
 package cacm
 
 import (
-	"strings"
-	"io/ioutil"
 	"regexp"
 	"strconv"
 	"../../indexes"
+	"../../utils"
 )
 
 // Collection stores the path to the data folder, the index and the stop list.
@@ -74,21 +73,11 @@ func (collection *Collection) computeIndexForDoc(doc string, docID int) {
 
 func (collection *Collection) computeIndexForPart(partContent string, docID int) {
 	// Split content into tokens
-	tokens := strings.FieldsFunc(partContent, func(r rune) bool {
-		return r == ' ' || r == '.' || r == '\n' || r == ',' || r == '?' || r == '!' || r == '(' || r == ')' || r == '*' || r == ';' || r == '"' || r == '\'' || r == ':' || r == '{' || r == '}' || r == '/' || r == '|'
-	})
-	collection.Index.AddTokensForDoc(tokens, docID)
+	collection.Index.AddParagraphForDoc(partContent, docID)
 }
 
 func (collection *Collection) getData() string {
-	return fileToString(collection.path + "cacm.all")
+	return utils.FileToString(collection.path + "cacm.all")
 }
 
-func fileToString(filePath string) string {
-	dat, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		panic(err)
-	}
-	fileString := string(dat)
-	return fileString
-}
+

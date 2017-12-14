@@ -76,7 +76,8 @@ func (request *BinaryRequest) computeRequest() map[int]float64 {
 	for _, andCondition:= range request.ands {
 		// Use the first word as a reference
 		referenceWord := andCondition[0]
-		docsForWord := request.index.DocsForWords[referenceWord]
+		var docsForWord indexes.DocsForWord
+		docsForWord = request.index.DocsForWords[referenceWord]
 		// Remove documents that don't contain the other words from the and condition
 		// Add the frequency from other words
 		for _, word := range andCondition[1:] {

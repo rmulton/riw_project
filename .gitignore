@@ -1,4 +1,6 @@
 .vscode
 consignes
 riw_project.exe
-*debug.test
+*.test
+*.gob
+!.go

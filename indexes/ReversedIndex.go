@@ -3,6 +3,7 @@ package indexes
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"math"
 	"../normalizers"
 )
@@ -41,10 +42,10 @@ func NewReversedIndex() *ReversedIndex { // change it to Collection, an interfac
 func (index *ReversedIndex) Finish() { //TODO?? TFIDF instead ??
 	// Get score to logscore, then normalize it
 	index.frqcToLogFrqc()
-	index.normalizeDocsScore()
+	index.normalizeScoresForWords()
 }
 
-func (index *ReversedIndex) normalizeDocsScore() {
+func (index *ReversedIndex) normalizeScoresForWords() {
 	// Get the sum of the scores for a word
 	for word, docsScore := range index.DocsForWords {
 		// Get the sum of the scores
@@ -72,7 +73,11 @@ func (index *ReversedIndex) frqcToLogFrqc() {
 	}
 }
 
-func (index *ReversedIndex) AddTokensForDoc(tokens []string, docID int) {
+func (index *ReversedIndex) AddParagraphForDoc(paragraph string, docID int) {
+	// Split content into tokens
+	tokens := strings.FieldsFunc(paragraph, func(r rune) bool {
+		return r == ' ' || r == '.' || r == '\n' || r == ',' || r == '?' || r == '!' || r == '(' || r == ')' || r == '*' || r == ';' || r == '"' || r == '\'' || r == ':' || r == '{' || r == '}' || r == '/' || r == '|'
+	})
 	normalizedTokens := normalizers.NormalizeWords(tokens, index.StopList) // Check ""
 	index.addFrequenciesForDoc(normalizedTokens, docID)
 }
