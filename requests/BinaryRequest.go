@@ -5,17 +5,18 @@ import (
 	"regexp"
 	"math"
 	"../indexes"
+	"../normalizers"
 )
 
 type BinaryRequest struct {
 	input string
-	index indexes.ReversedIndex
+	index *indexes.ReversedIndex
 	ands [][]string
 	DocsScore map[int]float64
 	Output []int
 }
 
-func NewBinaryRequest(input string, index indexes.ReversedIndex) BinaryRequest {
+func NewBinaryRequest(input string, index *indexes.ReversedIndex) BinaryRequest {
 	request := BinaryRequest{input, index, [][]string{}, map[int]float64{}, []int{}}
 	request.parse()
 	request.computeOutput()
@@ -28,6 +29,8 @@ func (request *BinaryRequest) parse() { // TODO : retirer stopwords, mots en dou
 	for _, and := range ands {
 		wordRegex := regexp.MustCompile("[0-9A-z\\-]+")
 		terms := wordRegex.FindAllString(and, -1)
+		// Normalize words
+		terms = normalizers.NormalizeWords(terms, request.index.StopList)
 		request.ands = append(request.ands, terms)
 	}
 }
@@ -71,12 +74,12 @@ func (request *BinaryRequest) computeRequest() map[int]float64 {
 	for _, andCondition:= range request.ands {
 		// Use the first word as a reference
 		referenceWord := andCondition[0]
-		docsForWord := request.index[referenceWord]
+		docsForWord := request.index.DocsForWords[referenceWord]
 		// Remove documents that don't contain the other words from the and condition
 		// Add the frequency from other words
 		for _, word := range andCondition[1:] {
 			for docID, frqc := range docsForWord {
-				_, exists := request.index[word][docID]
+				_, exists := request.index.DocsForWords[word][docID]
 				if !exists {
 					delete(docsForWord, docID)
 				} else {

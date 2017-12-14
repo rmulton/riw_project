@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strconv"
 	"../../indexes"
+	"github.com/kljensen/snowball"
 )
 
 // Collection
@@ -13,12 +14,12 @@ import (
 // Initiate with empty Index and stopList, they are computed in ComputeIndex()
 type Collection struct {
 	path string
-	Index indexes.ReversedIndex
+	Index *indexes.ReversedIndex
 	stopList []string // Need to be stored to avoid computation
 }
 
 func NewCollection(dataFolderPath string) Collection {
-	collection := Collection{dataFolderPath, make(indexes.ReversedIndex), []string{}}
+	collection := Collection{dataFolderPath, indexes.NewReversedIndex(), []string{}}
 	collection.computeIndex() // the index is stored in a collection object to avoid multiple function arguments
 	return collection
 }
@@ -82,16 +83,21 @@ func (collection *Collection) addSignificantTokensToIndex(tokens []string, docID
 	index := collection.Index
 	// Get significant words
 	for _, token := range tokens {
-		token = strings.ToLower(token)
-		if collection.isSignificant(token) {
+		// done by the stemmatizer
+		// token = strings.ToLower(token)
+		stemmedToken, err := snowball.Stem(token, "english", true)
+		if err != nil {
+			panic(err)
+		}
+		if collection.isSignificant(stemmedToken) {
 			// Add token to the list of keys if necessary
-			_, exists := index[token]
+			_, exists := index.DocsForWords[stemmedToken]
 			if !exists {
 				tokenDict := make(map[int]float64)
-				index[token] = tokenDict
-				index[token][docID] = 0
+				index.DocsForWords[stemmedToken] = tokenDict
+				index.DocsForWords[stemmedToken][docID] = 0
 			}
-			index[token][docID]++
+			index.DocsForWords[stemmedToken][docID]++
 		}
 	}
 }
@@ -108,9 +114,7 @@ func (collection *Collection) isSignificant(token string) bool {
 
 func (collection *Collection) setStopList() {
 	// Read stop words file
-	var stopListFile = fileToString(collection.path + "common_words")
-	var stopList = strings.Split(stopListFile, "\n")
-	collection.stopList = stopList
+	collection.stopList = GetStopListFromFolder(collection.path)
 }
 
 func (collection *Collection) getData() string {

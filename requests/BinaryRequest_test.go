@@ -28,7 +28,7 @@ var equalTestRequests = [][2]string {
 	[2]string{"computer & science | science | computer", "science & computer"},
 	[2]string{"computer & science | chicken", "science & computer"},
 	[2]string{"Computer & scIEnce", "SciencE & comPUter"},
-	// [2]string{"36-bit", "36-BiT"}, // TODO: minimize
+	[2]string{"36-bit", "36-BiT"},
 	[2]string{"chicken", ""},
 }
 
@@ -43,20 +43,20 @@ var parseTestRequests = []parsedRequest {
 	parsedRequest{
 		"chicken & bacon & eggs",
 		[][]string{
-			{"chicken", "bacon", "eggs"},
+			{"chicken", "bacon", "egg"},
 		},
 	},
 	parsedRequest{
 		"computer & science & chicken | ham",
 		[][]string{
-			{"computer", "science", "chicken"},
+			{"comput", "scienc", "chicken"},
 			{"ham"},
 		},
 	},
 	parsedRequest{
 		"36-BiT",
 		[][]string{
-			{"36-BiT"},
+			{"36-bit"},
 		},
 	},
 }
