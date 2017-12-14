@@ -12,9 +12,11 @@ type BinaryRequest struct {
 	input string
 	index *indexes.ReversedIndex
 	ands [][]string
-	DocsScore map[int]float64
+	DocsScore DocsScore
 	Output []int
 }
+
+type DocsScore map[int]float64
 
 func NewBinaryRequest(input string, index *indexes.ReversedIndex) BinaryRequest {
 	request := BinaryRequest{input, index, [][]string{}, map[int]float64{}, []int{}}
