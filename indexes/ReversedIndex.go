@@ -38,11 +38,25 @@ func NewReversedIndex() *ReversedIndex { // change it to Collection, an interfac
 }
 
 func (index *ReversedIndex) Finish() {
+	// Get score to logscore, then normalize it
 	index.frqcToLogFrqc()
-	// index.normalizeDocsScore()
+	index.normalizeDocsScore()
 }
 
-// func (index ReversedIndex)
+func (index *ReversedIndex) normalizeDocsScore() {
+	// Get the sum of the scores for a word
+	for word, docsScore := range index.DocsForWords {
+		// Get the sum of the scores
+		var wordSum float64 = 0
+		for _, score := range docsScore {
+			wordSum += score
+		}
+		// Normalize the scores
+		for docID, score := range docsScore {
+			index.DocsForWords[word][docID] = score/wordSum
+		}
+	}
+}
 
 // FrqcToLogFrqc transforms the linear frequency score to a log frequency score
 // The linear frequency score for a document and a word is the numer of occurence of the word in the document
