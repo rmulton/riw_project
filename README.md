@@ -3,8 +3,11 @@ Project done during Céline Hudelot class on Information Retrieval.
 
 # Installation
 ```git clone https://github.com/rmulton/riw_project```
+
 ```cd riw_project```
+
 ```go build```
+
 ```./riw_project```
 
 # Architecture
