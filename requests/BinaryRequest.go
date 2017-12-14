@@ -3,6 +3,7 @@ package requests
 import (
 	"sort"
 	"regexp"
+	"math"
 	"../indexes"
 )
 
@@ -10,11 +11,12 @@ type BinaryRequest struct {
 	input string
 	index indexes.ReversedIndex
 	ands [][]string
+	DocsScore map[int]float64
 	Output []int
 }
 
 func NewBinaryRequest(input string, index indexes.ReversedIndex) BinaryRequest {
-	request := BinaryRequest{input, index, [][]string{}, []int{}}
+	request := BinaryRequest{input, index, [][]string{}, map[int]float64{}, []int{}}
 	request.parse()
 	request.computeOutput()
 	return request
@@ -33,6 +35,7 @@ func (request *BinaryRequest) parse() { // TODO : retirer stopwords, mots en dou
 func (request *BinaryRequest) computeOutput() {
 	// Find the output
 	docsFrqc := request.computeRequest()
+	request.DocsScore = docsFrqc
 	request.Output = getSortedDocList(docsFrqc)
 }
 
@@ -81,11 +84,12 @@ func (request *BinaryRequest) computeRequest() map[int]float64 {
 				}
 			}
 		}
-
-		// Add remaining words to output dict
+		// Output score is the max of all the docForWords[docID] score
 		for docID, frqc := range docsForWord {
-			output[docID] += frqc
+			output[docID] = math.Max(frqc, output[docID])
 		}
 	}
+
+
 	return output
 }

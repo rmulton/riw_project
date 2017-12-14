@@ -23,7 +23,7 @@ func NewCollection(dataFolderPath string) Collection {
 	return collection
 }
 
-func (collection Collection) computeIndex() {
+func (collection *Collection) computeIndex() {
 	// Read documents file
 	var dataFile = collection.getData() // Change this to handle bigger files
 	
@@ -35,7 +35,7 @@ func (collection Collection) computeIndex() {
 	collection.computeIndexForDocs(docs, docsNum)
 }
 
-func (collection Collection) computeIndexForDocs(docs []string, docsNum [][]string) {
+func (collection *Collection) computeIndexForDocs(docs []string, docsNum [][]string) {
 	collection.setStopList()
 	// Iterate over the documents and parse them
 	for i, doc := range docs {
@@ -53,7 +53,7 @@ func (collection Collection) computeIndexForDocs(docs []string, docsNum [][]stri
 	
 }
 
-func (collection Collection) computeIndexForDoc(doc string, docID int) {
+func (collection *Collection) computeIndexForDoc(doc string, docID int) {
 	// Split the doc in parts
 	regexDocPart := regexp.MustCompile("\\.([A-Z])\n")
 	partsContent := regexDocPart.Split(doc, -1)
@@ -69,7 +69,7 @@ func (collection Collection) computeIndexForDoc(doc string, docID int) {
 	}
 }
 
-func (collection Collection) computeIndexForPart(partContent string, docID int) {
+func (collection *Collection) computeIndexForPart(partContent string, docID int) {
 	// Split content into tokens
 	tokens := strings.FieldsFunc(partContent, func(r rune) bool {
 		return r == ' ' || r == '.' || r == '\n' || r == ',' || r == '?' || r == '!' || r == '(' || r == ')' || r == '*' || r == ';' || r == '"' || r == '\'' || r == ':' || r == '{' || r == '}' || r == '/' || r == '|'
@@ -77,7 +77,7 @@ func (collection Collection) computeIndexForPart(partContent string, docID int) 
 	collection.addSignificantTokensToIndex(tokens, docID)
 }
 
-func (collection Collection) addSignificantTokensToIndex(tokens []string, docID int) {
+func (collection *Collection) addSignificantTokensToIndex(tokens []string, docID int) {
 	// Copy the index
 	index := collection.Index
 	// Get significant words
@@ -96,7 +96,7 @@ func (collection Collection) addSignificantTokensToIndex(tokens []string, docID 
 	}
 }
 
-func (collection Collection) isSignificant(token string) bool {
+func (collection *Collection) isSignificant(token string) bool {
 	// TODO : inefficient
 	for _, unsignificantWord := range collection.stopList {
 		if token == unsignificantWord {
@@ -106,14 +106,14 @@ func (collection Collection) isSignificant(token string) bool {
 	return true
 }
 
-func (collection Collection) setStopList() {
+func (collection *Collection) setStopList() {
 	// Read stop words file
 	var stopListFile = fileToString(collection.path + "common_words")
 	var stopList = strings.Split(stopListFile, "\n")
 	collection.stopList = stopList
 }
 
-func (collection Collection) getData() string {
+func (collection *Collection) getData() string {
 	return fileToString(collection.path + "cacm.all")
 }
 

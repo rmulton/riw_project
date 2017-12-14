@@ -45,7 +45,7 @@ func (index ReversedIndex) FrqcToLogFrqc() {
 	for word, docFrqcs := range index {
 		// Iterate over the documents/frqc map of the word
 		for docID, frqc := range docFrqcs {
-			index[word][docID] = math.Log10(frqc)
+			index[word][docID] = 1 + math.Log10(frqc)
 		}
 
 	}

@@ -17,7 +17,8 @@ func main() {
 	fmt.Printf("Index computed in %f seconds\n", elapsed.Seconds())
 
 	start = time.Now()
-	request := requests.NewBinaryRequest("computer & science", collection.Index)
+	request := requests.NewBinaryRequest("36-bit & memory & calculation | computer", collection.Index)
+	fmt.Println(request.DocsScore)
 	userOutput := requests.NewUserOutput(request.Output)
 	userOutput.Print()
 	done = time.Now()
