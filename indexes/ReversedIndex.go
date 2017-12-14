@@ -39,11 +39,14 @@ func NewReversedIndex() *ReversedIndex { // change it to Collection, an interfac
 
 func (index *ReversedIndex) Finish() {
 	index.frqcToLogFrqc()
+	// index.normalizeDocsScore()
 }
+
+// func (index ReversedIndex)
 
 // FrqcToLogFrqc transforms the linear frequency score to a log frequency score
 // The linear frequency score for a document and a word is the numer of occurence of the word in the document
-func (index ReversedIndex) frqcToLogFrqc() {
+func (index *ReversedIndex) frqcToLogFrqc() {
 	// Iterate over the index
 	for word, docFrqcs := range index.DocsForWords {
 		// Iterate over the documents/frqc map of the word
@@ -68,7 +71,7 @@ func (index *ReversedIndex) addFrequenciesForDoc(wordRoots []string, docID int) 
 	}
 }
 
-func (index ReversedIndex) String() string {
+func (index *ReversedIndex) String() string {
 	// Output variable
 	var output string
 
