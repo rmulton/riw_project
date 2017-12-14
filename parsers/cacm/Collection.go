@@ -15,11 +15,11 @@ import (
 type Collection struct {
 	path string
 	Index *indexes.ReversedIndex
-	stopList []string // Need to be stored to avoid computation
 }
 
 func NewCollection(dataFolderPath string) Collection {
-	collection := Collection{dataFolderPath, indexes.NewReversedIndex(), []string{}}
+	// Create an emtpy collection
+	collection := Collection{dataFolderPath, indexes.NewReversedIndex()}
 	collection.computeIndex() // the index is stored in a collection object to avoid multiple function arguments
 	return collection
 }
@@ -37,7 +37,6 @@ func (collection *Collection) computeIndex() {
 }
 
 func (collection *Collection) computeIndexForDocs(docs []string, docsNum [][]string) {
-	collection.setStopList()
 	// Iterate over the documents and parse them
 	for i, doc := range docs {
 		if doc != "" { // TODO: Check how to avoid having an empty document
@@ -104,17 +103,12 @@ func (collection *Collection) addSignificantTokensToIndex(tokens []string, docID
 
 func (collection *Collection) isSignificant(token string) bool {
 	// TODO : inefficient
-	for _, unsignificantWord := range collection.stopList {
+	for _, unsignificantWord := range collection.Index.StopList {
 		if token == unsignificantWord {
 			return false
 		}
 	}
 	return true
-}
-
-func (collection *Collection) setStopList() {
-	// Read stop words file
-	collection.stopList = GetStopListFromFolder(collection.path)
 }
 
 func (collection *Collection) getData() string {
