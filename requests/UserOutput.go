@@ -19,7 +19,7 @@ func NewUserOutput(sortedDocIDs []int, docsScore DocsScore) UserOutput {
 }
 	
 func (userOutput *UserOutput) Print() {
-	fmt.Println("Result:")
+	fmt.Println("Results:")
 	for i, docID := range userOutput.sortedDocIDs {
 		userOutput.printDoc(i, docID)
 	}
