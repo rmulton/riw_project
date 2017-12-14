@@ -8,7 +8,7 @@ Project done during Céline Hudelot class on Information Retrieval.
 
 ```go build```
 
-```./riw_project```
+```./riw_project -collection=cacm```
 
 # Architecture
 ## /parsers
