@@ -37,7 +37,8 @@ func NewReversedIndex() *ReversedIndex { // change it to Collection, an interfac
 	return &ReversedIndex{docsForWords, stopList}
 }
 
-func (index *ReversedIndex) Finish() {
+// Finish applies transformations to get from docs-words mapping to docs[word] = score
+func (index *ReversedIndex) Finish() { //TODO?? TFIDF instead ??
 	// Get score to logscore, then normalize it
 	index.frqcToLogFrqc()
 	index.normalizeDocsScore()
