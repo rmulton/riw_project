@@ -8,30 +8,28 @@ import (
 	"../../indexes"
 )
 
-// Collection
-// Stores the path to the data folder, the index and the stop list.
+// Collection stores the path to the data folder, the index and the stop list.
 // Initiate with empty Index and stopList, they are computed in ComputeIndex()
 type Collection struct {
 	path string
 	Index *indexes.ReversedIndex
 }
 
-func NewCollection(dataFolderPath string) Collection {
+// NewCollection create a collection structure and fill it with data from the dataFolderPath
+func NewCollection(dataFolderPath string) *Collection {
 	// Create an emtpy collection
 	collection := Collection{dataFolderPath, indexes.NewReversedIndex()}
 	// Fille the collection Index with the reversed index computed on the collection
 	collection.computeIndex() // NB: the index is stored in a collection object to avoid multiple function arguments
-
 	// When the index is done, get from linear frequency to log frequency
 	collection.Index.Finish() // See if it is possible to move it to a ReversedIndex method
 
-	return collection
+	return &collection
 }
 
 func (collection *Collection) computeIndex() {
 	// Read the documents from the folder
 	var dataFile = collection.getData() // TODO: Change this to handle bigger files
-	
 	// Split the files in documents
 	regexDoc := regexp.MustCompile("\\.I ([0-9]+)\n")
 	// Documents content
@@ -81,8 +79,6 @@ func (collection *Collection) computeIndexForPart(partContent string, docID int)
 	})
 	collection.Index.AddTokensForDoc(tokens, docID)
 }
-
-
 
 func (collection *Collection) getData() string {
 	return fileToString(collection.path + "cacm.all")
