@@ -76,22 +76,26 @@ func (request *BinaryRequest) computeRequest() map[int]float64 {
 	for _, andCondition:= range request.ands {
 		// Use the first word as a reference
 		referenceWord := andCondition[0]
-		var docsForWord indexes.DocsForWord
-		docsForWord = request.index.DocsForWords[referenceWord]
+		docsForWord := request.index.DocsForWords[referenceWord]
+		// Not possible to directly work on docsForWord, otherwise deletion on index happends
+		var accurateDocsID  = make(indexes.DocsForWord)
+		for docID, frqc := range docsForWord {
+			accurateDocsID[docID] = frqc
+		}
 		// Remove documents that don't contain the other words from the and condition
 		// Add the frequency from other words
 		for _, word := range andCondition[1:] {
-			for docID, frqc := range docsForWord {
+			for docID, frqc := range accurateDocsID {
 				_, exists := request.index.DocsForWords[word][docID]
 				if !exists {
-					delete(docsForWord, docID)
+					delete(accurateDocsID, docID)
 				} else {
-					docsForWord[docID] += frqc
+					accurateDocsID[docID] += frqc
 				}
 			}
 		}
 		// Output score is the max of all the docForWords[docID] score
-		for docID, frqc := range docsForWord {
+		for docID, frqc := range accurateDocsID {
 			output[docID] = math.Max(frqc, output[docID])
 		}
 	}
