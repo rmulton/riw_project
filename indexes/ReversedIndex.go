@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"math"
+	"../normalizers"
 )
 
 
@@ -36,9 +37,13 @@ func NewReversedIndex() *ReversedIndex { // change it to Collection, an interfac
 	return &ReversedIndex{docsForWords, stopList}
 }
 
+func (index *ReversedIndex) Finish() {
+	index.frqcToLogFrqc()
+}
+
 // FrqcToLogFrqc transforms the linear frequency score to a log frequency score
 // The linear frequency score for a document and a word is the numer of occurence of the word in the document
-func (index ReversedIndex) FrqcToLogFrqc() {
+func (index ReversedIndex) frqcToLogFrqc() {
 	// Iterate over the index
 	for word, docFrqcs := range index.DocsForWords {
 		// Iterate over the documents/frqc map of the word
@@ -46,6 +51,20 @@ func (index ReversedIndex) FrqcToLogFrqc() {
 			index.DocsForWords[word][docID] = 1 + math.Log10(frqc)
 		}
 
+	}
+}
+
+func (index *ReversedIndex) AddTokensForDoc(tokens []string, docID int) {
+	normalizedTokens := normalizers.NormalizeWords(tokens, index.StopList) // Check ""
+	index.addFrequenciesForDoc(normalizedTokens, docID)
+}
+
+func (index *ReversedIndex) addFrequenciesForDoc(wordRoots []string, docID int) {
+	for _, wordRoot := range wordRoots {
+		if _, exists := index.DocsForWords[wordRoot]; !exists {
+			index.DocsForWords[wordRoot] = make(DocsForWord)
+		}
+		index.DocsForWords[wordRoot][docID]++
 	}
 }
 

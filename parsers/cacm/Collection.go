@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"strconv"
 	"../../indexes"
-	"github.com/kljensen/snowball"
 )
 
 // Collection
@@ -20,19 +19,26 @@ type Collection struct {
 func NewCollection(dataFolderPath string) Collection {
 	// Create an emtpy collection
 	collection := Collection{dataFolderPath, indexes.NewReversedIndex()}
-	collection.computeIndex() // the index is stored in a collection object to avoid multiple function arguments
+	// Fille the collection Index with the reversed index computed on the collection
+	collection.computeIndex() // NB: the index is stored in a collection object to avoid multiple function arguments
+
+	// When the index is done, get from linear frequency to log frequency
+	collection.Index.Finish() // See if it is possible to move it to a ReversedIndex method
+
 	return collection
 }
 
 func (collection *Collection) computeIndex() {
-	// Read documents file
-	var dataFile = collection.getData() // Change this to handle bigger files
+	// Read the documents from the folder
+	var dataFile = collection.getData() // TODO: Change this to handle bigger files
 	
 	// Split the files in documents
 	regexDoc := regexp.MustCompile("\\.I ([0-9]+)\n")
+	// Documents content
 	docs := regexDoc.Split(dataFile, -1)
+	// Documents ID. Important since there might be missing ids
 	docsNum := regexDoc.FindAllStringSubmatch(dataFile, -1)
-	
+	// Fill the index with the data from the documents	
 	collection.computeIndexForDocs(docs, docsNum)
 }
 
@@ -40,17 +46,15 @@ func (collection *Collection) computeIndexForDocs(docs []string, docsNum [][]str
 	// Iterate over the documents and parse them
 	for i, doc := range docs {
 		if doc != "" { // TODO: Check how to avoid having an empty document
-			// Create the document data structure
 			docID, err := strconv.Atoi(docsNum[i-1][1])
 			if err != nil {
 				panic(err)
 			}
+			// Fill the index with the data from this document
 			collection.computeIndexForDoc(doc, docID)	
 		}
 	}
-	// When the index is done, get from linear frequency to log frequency
-	collection.Index.FrqcToLogFrqc()
-	
+		
 }
 
 func (collection *Collection) computeIndexForDoc(doc string, docID int) {
@@ -59,9 +63,10 @@ func (collection *Collection) computeIndexForDoc(doc string, docID int) {
 	partsContent := regexDocPart.Split(doc, -1)
 	partsName := regexDocPart.FindAllStringSubmatch(doc, -1)
 	
-	// Add part to doc data structure
+	// Fill the index with the data from these parts
 	for j, partName := range partsName {
 		partName := partName[1]
+		// Only use text from T, W and K parts
 		if partName == "T" || partName == "W" || partName == "K" {
 			partContent := partsContent[j+1]
 			collection.computeIndexForPart(partContent, docID)
@@ -74,42 +79,10 @@ func (collection *Collection) computeIndexForPart(partContent string, docID int)
 	tokens := strings.FieldsFunc(partContent, func(r rune) bool {
 		return r == ' ' || r == '.' || r == '\n' || r == ',' || r == '?' || r == '!' || r == '(' || r == ')' || r == '*' || r == ';' || r == '"' || r == '\'' || r == ':' || r == '{' || r == '}' || r == '/' || r == '|'
 	})
-	collection.addSignificantTokensToIndex(tokens, docID)
+	collection.Index.AddTokensForDoc(tokens, docID)
 }
 
-func (collection *Collection) addSignificantTokensToIndex(tokens []string, docID int) {
-	// Copy the index
-	index := collection.Index
-	// Get significant words
-	for _, token := range tokens {
-		// done by the stemmatizer
-		// token = strings.ToLower(token)
-		stemmedToken, err := snowball.Stem(token, "english", true)
-		if err != nil {
-			panic(err)
-		}
-		if collection.isSignificant(stemmedToken) {
-			// Add token to the list of keys if necessary
-			_, exists := index.DocsForWords[stemmedToken]
-			if !exists {
-				tokenDict := make(map[int]float64)
-				index.DocsForWords[stemmedToken] = tokenDict
-				index.DocsForWords[stemmedToken][docID] = 0
-			}
-			index.DocsForWords[stemmedToken][docID]++
-		}
-	}
-}
 
-func (collection *Collection) isSignificant(token string) bool {
-	// TODO : inefficient
-	for _, unsignificantWord := range collection.Index.StopList {
-		if token == unsignificantWord {
-			return false
-		}
-	}
-	return true
-}
 
 func (collection *Collection) getData() string {
 	return fileToString(collection.path + "cacm.all")
