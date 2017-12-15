@@ -19,6 +19,7 @@ func readInput() string {
 func main() {
 	// Input engine type
 	collectionType := flag.String("collection", "cacm", "Choose which collection to use. \"cacm\" and \"stanford\" are implemented")
+	refresh := flag.Bool("refresh", false, "Choose whether to computer the index or load it from file if it already exists")
 	flag.Parse()
 
 	// Run the engine
@@ -26,7 +27,8 @@ func main() {
 	switch *collectionType {
 	case "stanford":
 		engine := requests.StanfordEngine{}
-		index = engine.LoadEngine()
+		index = engine.LoadEngine(*refresh)
+		fmt.Printf("Found %v documents", index.CorpusSize)
 		for {
 			input := readInput()
 			output := engine.Request(input, index)
@@ -34,7 +36,8 @@ func main() {
 		}
 	default:
 		engine := requests.CacmEngine{}
-		index = engine.LoadEngine()
+		index = engine.LoadEngine(*refresh)
+		fmt.Printf("Found %v documents", index.CorpusSize)
 		for {
 			input := readInput()
 			output := engine.Request(input, index)

@@ -23,7 +23,7 @@ func NewCollection(dataFolderPath string) *Collection {
 	collection.computeIndex() // NB: the index is stored in a collection object to avoid multiple function arguments
 	// When the index is done, get from linear frequency to log frequency
 	collection.Index.Finish() // See if it is possible to move it to a ReversedIndex method
-	fmt.Printf("Found %v documents", collection.Index.CorpusSize)
+	fmt.Printf("Found %v documents\n", collection.Index.CorpusSize)
 
 	return &collection
 }

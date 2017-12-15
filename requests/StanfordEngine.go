@@ -12,13 +12,13 @@ import (
 type StanfordEngine struct {
 	collection *stanford.Collection
 }
-func (engine *StanfordEngine) LoadEngine() *indexes.ReversedIndex{
+func (engine *StanfordEngine) LoadEngine(refresh bool) *indexes.ReversedIndex{
 	// Start timer
 	start := time.Now()
 	indexFile := "./saved/stanford_index.gob"
 	var collection = new(stanford.Collection)
 	// Load the engine
-	if _, err := os.Stat(indexFile); err == nil {
+	if _, err := os.Stat(indexFile); err == nil && !refresh {
 		// If the collection is saved, load it
 		err := utils.ReadGob(indexFile, collection)
 		if err != nil {

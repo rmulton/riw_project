@@ -5,6 +5,6 @@ import (
 )
 
 type Engine interface {
-	LoadEngine() *indexes.ReversedIndex
+	LoadEngine(refresh bool) *indexes.ReversedIndex
 	Request(query string) UserOutput
 }

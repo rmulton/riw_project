@@ -12,13 +12,13 @@ import (
 type CacmEngine struct {
 }
 
-func (engine *CacmEngine) LoadEngine() *indexes.ReversedIndex {
+func (engine *CacmEngine) LoadEngine(refresh bool) *indexes.ReversedIndex {
 	// Start timer
 	start := time.Now()
 	indexFile := "./saved/cacm_index.gob"
 	var collection = new(cacm.Collection)
 	// Load the engine
-	if _, err := os.Stat(indexFile); err == nil {
+	if _, err := os.Stat(indexFile); err == nil && !refresh {
 		// If the collection is saved, load it
 		err := utils.ReadGob(indexFile, collection)
 		if err != nil {
