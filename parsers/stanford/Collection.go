@@ -17,7 +17,6 @@ func NewCollection(dataFolderPath string) *Collection {
 	collection.computeIndex()
 	collection.Index.Finish()
 	utils.WriteGob("./stanford_index.gob", collection)
-	log.Printf("Found %v documents", collection.Index.CorpusSize)
 
 	return &collection
 }
