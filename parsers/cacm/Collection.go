@@ -1,6 +1,7 @@
 package cacm
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"../../indexes"
@@ -22,6 +23,7 @@ func NewCollection(dataFolderPath string) *Collection {
 	collection.computeIndex() // NB: the index is stored in a collection object to avoid multiple function arguments
 	// When the index is done, get from linear frequency to log frequency
 	collection.Index.Finish() // See if it is possible to move it to a ReversedIndex method
+	fmt.Printf("Found %v documents", collection.Index.CorpusSize)
 
 	return &collection
 }
@@ -69,6 +71,8 @@ func (collection *Collection) computeIndexForDoc(doc string, docID int) {
 			collection.computeIndexForPart(partContent, docID)
 		}
 	}
+
+	collection.Index.CorpusSize++
 }
 
 func (collection *Collection) computeIndexForPart(partContent string, docID int) {

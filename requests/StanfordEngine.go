@@ -26,7 +26,7 @@ func (engine *StanfordEngine) LoadEngine() *indexes.ReversedIndex{
 		}
 	} else {
 		// Otherwise compute it
-		collection = stanford.NewCollection("./consignes/Data/CACM/")
+		collection = stanford.NewCollection("./consignes/Data/CS276/pa1-data/")
 		utils.WriteGob(indexFile, collection)
 	}
 	// Display loading time

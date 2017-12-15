@@ -29,20 +29,39 @@ type DocsForWord map[int]float64
 type ReversedIndex struct {
 	DocsForWords map[string]DocsForWord
 	StopList []string
+	CorpusSize float64
 }
 
 // Create an empty ReversedIndex to fill
 func NewReversedIndex() *ReversedIndex { // change it to Collection, an interface
 	docsForWords := make(map[string]DocsForWord)
 	stopList := []string{}
-	return &ReversedIndex{docsForWords, stopList}
+	corpusSize := 0.
+	return &ReversedIndex{docsForWords, stopList, corpusSize}
 }
 
 // Finish applies transformations to get from docs-words mapping to docs[word] = score
 func (index *ReversedIndex) Finish() { //TODO?? TFIDF instead ??
 	// Get score to logscore, then normalize it
-	index.frqcToLogFrqc()
-	index.normalizeScoresForWords()
+	// index.frqcToLogFrqc()
+	// index.normalizeScoresForWords()
+	index.frqcToTfIdf()
+}
+
+func (index *ReversedIndex) frqcToTfIdf() {
+// Get the sum of the scores for a word
+	for word, docsScore := range index.DocsForWords {
+		// Get the sum of the scores
+		var wordSum float64 = 0.
+		for _, frqc := range docsScore {
+			wordSum += frqc
+		}
+		// Normalize the scores
+		for docID, frqc := range docsScore {
+			tfidf := (1+math.Log10(frqc)) * (math.Log10(index.CorpusSize/wordSum))
+			index.DocsForWords[word][docID] = tfidf
+		}
+	}
 }
 
 func (index *ReversedIndex) normalizeScoresForWords() {
@@ -84,6 +103,7 @@ func (index *ReversedIndex) AddParagraphForDoc(paragraph string, docID int) {
 
 func (index *ReversedIndex) addFrequenciesForDoc(wordRoots []string, docID int) {
 	for _, wordRoot := range wordRoots {
+		// New word
 		if _, exists := index.DocsForWords[wordRoot]; !exists {
 			index.DocsForWords[wordRoot] = make(DocsForWord)
 		}

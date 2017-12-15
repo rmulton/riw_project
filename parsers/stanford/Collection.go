@@ -17,6 +17,7 @@ func NewCollection(dataFolderPath string) *Collection {
 	collection.computeIndex()
 	collection.Index.Finish()
 	utils.WriteGob("./stanford_index.gob", collection)
+	log.Printf("Found %v documents", collection.Index.CorpusSize)
 
 	return &collection
 }
@@ -59,4 +60,6 @@ func (collection *Collection) computeIndexForFile(path string, fileID int) {
 	stringFile := utils.FileToString(path)
 	// Add to index
 	collection.Index.AddParagraphForDoc(stringFile, fileID) // Warning: id must use both folder and files, otherwise there are some conflicts
+
+	collection.Index.CorpusSize++
 }
