@@ -37,8 +37,14 @@ func (engine *CacmEngine) LoadEngine(refresh bool) *indexes.ReversedIndex {
 }
 
 func (engine *CacmEngine) Request(query string, index *indexes.ReversedIndex) UserOutput {
+	// Start timer
+	start := time.Now()
 	// Compute the request
 	binaryRequest := NewBinaryRequest(query, index)
 	// Return the output
+	// Display loading time
+	done := time.Now()
+	elapsed := done.Sub(start)
+	fmt.Printf("[Request computed for Stanford in %f seconds]\n", elapsed.Seconds())
 	return NewUserOutput(binaryRequest.Output, binaryRequest.DocsScore) // Simplify to binaryRequest
 }
