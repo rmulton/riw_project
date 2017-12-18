@@ -13,7 +13,7 @@ type Collection struct {
 }
 
 func NewCollection(dataFolderPath string) *Collection {
-	collection := Collection{dataFolderPath, indexes.NewReversedIndex()}
+	collection := Collection{path: dataFolderPath, Index: indexes.NewReversedIndex()}
 	collection.computeIndex()
 	collection.Index.Finish()
 	utils.WriteGob("./stanford_index.gob", collection)

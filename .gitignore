@@ -3,4 +3,4 @@ consignes
 riw_project.exe
 *.test
 *.gob
-!.go
+debug
