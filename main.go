@@ -1,48 +1,32 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
-	"os"
-	"./requests"
-	"flag"
-	"./indexes"
+	"sync"
+	"./parsers"
+	"./blocks"
+	"log"
+	"time"
 )
 
-func readInput() string {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("\n>> Please enter request: ")
-	text, _ := reader.ReadString('\n')
-	return text
-}
-
 func main() {
-	// Input engine type
-	collectionType := flag.String("collection", "cacm", "Choose which collection to use. \"cacm\" and \"stanford\" are implemented")
-	refresh := flag.Bool("refresh", false, "Choose whether to computer the index or load it from file if it already exists")
-	flag.Parse()
-
-	// Run the engine
-	var index *indexes.ReversedIndex
-	switch *collectionType {
-	case "stanford":
-		engine := requests.StanfordEngine{}
-		index = engine.LoadEngine(*refresh)
-		fmt.Printf("Found %v documents", index.CorpusSize)
-		for {
-			input := readInput()
-			output := engine.Request(input, index)
-			output.Print()
-		}
-	default:
-		engine := requests.CacmEngine{}
-		index = engine.LoadEngine(*refresh)
-		fmt.Printf("Found %v documents", index.CorpusSize)
-		for {
-			input := readInput()
-			output := engine.Request(input, index)
-			output.Print()
-		}
-	}
-
+	start := time.Now()
+	var waitGroup sync.WaitGroup
+	reader := parsers.NewStanfordReader(
+		"../riw_project/consignes/Data/CS276/pa1-data/",
+		&waitGroup,
+	)
+	blockFiller := blocks.NewFiller(
+		35000,
+		"./saved/",
+		reader.Docs,
+		&waitGroup,
+	)
+	log.Println("Starting")
+	waitGroup.Add(2)
+	go reader.Read()
+	go blockFiller.Fill()
+	waitGroup.Wait()
+	done := time.Now()
+	elapsed := done.Sub(start)
+	log.Printf("Done in %v", elapsed)
 }
