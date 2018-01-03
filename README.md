@@ -45,22 +45,37 @@ Since we need all parsers to be able to write to the database at the same time, 
 # Architecture
 
 ## Choices
-- Specific reading procedures for a collection is implemented in /parser
+- Specific reading procedures for a collection is implemented in /parsers
 - Common calculation procedures to index the documents are handled in /indexes
 - Specific request parsing procedures are handled in /requests
 - Common calculation procedures to answer the request are handled in /engines
+
 ## /parsers
-A Parser handles everything that is specific to a document collection. It needs to parse the collection and fill an Index doing so.
+A Parser handles reading and parsing procedure for a collection. It needs to send the parsed documents to the index builder through a channel. Channels are used and not Mutex so that a parser routine wouldn't be blocked waiting for the lock. See the parser interface.
+
+Implemented :
+- CACM
+- Stanford
+
 ## /indexes
-An Index is filled by a Parser. Then it applies some rules to transform the score the Parser has given to every document for every word.
-- ReversedIndex implements a simple TF-IdF index procedure.
-- SafeReversedIndex implements a threaded version of ReversedIndex
+An Index stores the parsed documents. When the index is finished, it applies a procedure to transform the postings lists to scores.
+
+Implemented :
+- TfIdf index : term frequency - inverse document frequency index
+
 ## /requests
 A Request handles a certain kind of request. It takes a string input from the user and compute the output according to an Index.
+
+Implemented :
+- Binary requests : requests using "and" and "or" conditions
+- Vectorized requests : requests using the angle between the request and the documents
+
 ## /engines
-An engine is supposed to take a request and an index and return an output (not already done). It should be request-type and collection agnostic.
+An Engine stores an index and responds to requests with a sorted list of documents that correspond to the request.
+
 ## /normalizers
 A Normalizer maps words with terms using NLP procedures.
+
 ## /utils
 Utils contains functions to
 - Transform files to string
