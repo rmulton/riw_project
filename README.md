@@ -10,7 +10,7 @@ Project done during Céline Hudelot class on Information Retrieval.
 
 ```./riw_project -collection=cacm```
 
-# Architecture
+# Design
 NB : if the collection (not the index) cannot be held in memory, check if it would be more efficient to use BSBI.
 ## Assumptions
 Any document of the collection can be held in memory.
@@ -41,6 +41,8 @@ In that case we need to have a machine that distributes documents to parse from 
 The previous system can be augmented to handle this case. However, it might be more clever to use a distributed database system to avoid reinventing the wheel.
 
 Since we need all parsers to be able to write to the database at the same time, availability is required. Hence a A-P database system is required. A document-oriented database would suit this use case (SimpleDB for instance).
+
+# Architecture
 
 ## Choices
 - Specific reading procedures for a collection is implemented in /parser
