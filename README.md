@@ -12,6 +12,8 @@ Project done during Céline Hudelot class on Information Retrieval.
 
 # Architecture
 NB : if the collection (not the index) cannot be held in memory, check if it would be more efficient to use BSBI.
+## Assumptions
+Any document of the collection can be held in memory.
 ## Use cases
 The goal of this project is to parse a collection of documents of any kind (for now only files), then build a reversed index to handle search request on the collection. It is designed to be used in three cases :
 
