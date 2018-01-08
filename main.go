@@ -12,13 +12,15 @@ func main() {
 	start := time.Now()
 	var waitGroup sync.WaitGroup
 	reader := parsers.NewStanfordReader(
-		"../riw_project/consignes/Data/CS276/pa1-data/",
+		"../consignes/Data/CS276/pa1-data/",
+		10,
 		&waitGroup,
 	)
 	blockFiller := blocks.NewFiller(
 		35000,
 		"./saved/",
 		reader.Docs,
+		10,
 		&waitGroup,
 	)
 	log.Println("Starting")
