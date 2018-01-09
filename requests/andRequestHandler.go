@@ -2,8 +2,8 @@ package requests
 
 import (
 	"fmt"
-	"strings"
 	"../inversers"
+	"../normalizers"
 )
 
 type andRequestHandler struct {
@@ -15,7 +15,7 @@ func NewAndRequestHandler() *andRequestHandler {
 }
 
 func (reqHandler *andRequestHandler) request(request string, index *Index) *inversers.PostingList {
-	terms := strings.Split(request, " ")
+	terms := *normalizers.Normalize(&request, &[]string{})
 	err := index.LoadTerms(terms)
 	if err != nil {
 		fmt.Println("One of the terms is not in the collection")
