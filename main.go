@@ -33,6 +33,6 @@ func main() {
 	// elapsed := done.Sub(start)
 	// log.Printf("Done in %v", elapsed)
 	engine := requests.NewEngine("./saved/")
-	engine.Request("stanford doctor")
+	engine.Request("stanford doctor kjfld")
 	
 }

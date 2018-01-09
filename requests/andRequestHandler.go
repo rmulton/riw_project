@@ -18,7 +18,7 @@ func (reqHandler *andRequestHandler) request(request string, index *Index) *inve
 	terms := strings.Split(request, " ")
 	err := index.LoadTerms(terms)
 	if err != nil {
-		fmt.Print("One of the terms is not in the collection")
+		fmt.Println("One of the terms is not in the collection")
 		return nil
 	}
 

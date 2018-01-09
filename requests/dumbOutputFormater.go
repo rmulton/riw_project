@@ -14,5 +14,9 @@ func NewDumbOutputFormater() *dumbOutputFormater {
 }
 
 func (fmter *dumbOutputFormater) output(res *inversers.PostingList) {
-	fmt.Printf("%v", res)
+	if res != nil {
+		fmt.Println("%v", res)
+	} else {
+		fmt.Println("The result is empty")
+	}
 }
