@@ -14,7 +14,7 @@ func (postingList PostingList) appendToTermFile(term string, writingChannel writ
 	writingChannel <- &toWrite{term, postingList}
 }
 
-func (postingList PostingList) mergeWith(otherPostingList PostingList) {
+func (postingList PostingList) MergeWith(otherPostingList PostingList) {
 	for docID, frqc := range otherPostingList {
 		_, exists := postingList[docID]
 		if exists {

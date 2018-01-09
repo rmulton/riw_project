@@ -92,7 +92,7 @@ func (filler *Filler) writePostingLists() {
 				panic(err)
 			}
 			// Merge the current posting list
-			postingListSoFar.mergeWith(toWrite.postingList)
+			postingListSoFar.MergeWith(toWrite.postingList)
 			// Write it to file
 			utils.WriteGob(termFile, postingListSoFar)
 		// Otherwise create it
