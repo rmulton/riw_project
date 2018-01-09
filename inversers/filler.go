@@ -86,7 +86,7 @@ func (filler *Filler) writePostingLists() {
 		termFile := fmt.Sprintf("./saved/%s.postings", toWrite.term)
 		// If the file exists append it
 		if _, err := os.Stat(termFile); err == nil {
-			postingListSoFar := make(postingList)
+			postingListSoFar := make(PostingList)
 			err := utils.ReadGob(termFile, &postingListSoFar)
 			if err != nil {
 				panic(err)

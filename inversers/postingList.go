@@ -3,18 +3,18 @@ package inversers
 import (
 )
 
-type postingList map[int]int
+type PostingList map[int]int
 
 type toWrite struct {
 	term string
-	postingList postingList
+	postingList PostingList
 }
 
-func (postingList postingList) appendToTermFile(term string, writingChannel writingChannel) {
+func (postingList PostingList) appendToTermFile(term string, writingChannel writingChannel) {
 	writingChannel <- &toWrite{term, postingList}
 }
 
-func (postingList postingList) mergeWith(otherPostingList postingList) {
+func (postingList PostingList) mergeWith(otherPostingList PostingList) {
 	for docID, frqc := range otherPostingList {
 		_, exists := postingList[docID]
 		if exists {

@@ -11,14 +11,14 @@ type BufferIndex struct {
 	bufferSize int
 	corpusSize int
 	bufferCounter int
-	postingLists map[string]postingList
+	postingLists map[string]PostingList
 	docIDToFilePath map[int]string
 	writingChannel writingChannel
 }
 
 func NewBufferIndex(bufferSize int, writingChannel writingChannel) *BufferIndex {
 	var mux sync.Mutex
-	postingLists := make(map[string]postingList)
+	postingLists := make(map[string]PostingList)
 	docIDToFilePath := make(map[int]string)
 	return &BufferIndex{
 		writingChannel: writingChannel,
@@ -33,7 +33,7 @@ func NewBufferIndex(bufferSize int, writingChannel writingChannel) *BufferIndex 
 func (index *BufferIndex) addDocToTerm(docID int, term string) {
 	_, exists := index.postingLists[term]
 	if !exists {
-		index.postingLists[term] = make(postingList)
+		index.postingLists[term] = make(PostingList)
 	}
 	index.postingLists[term][docID]++
 	index.bufferCounter++
@@ -62,7 +62,7 @@ func (index *BufferIndex) writeBiggestPostingList() {
 
 	// Copy it to let other routines get access to the index, and remove it from the index
 	longestPostingList := index.postingLists[termWithLongestPostingList]
-	emptyPostingList := make(postingList)
+	emptyPostingList := make(PostingList)
 	index.postingLists[termWithLongestPostingList] = emptyPostingList
 
 	index.bufferCounter -= max
