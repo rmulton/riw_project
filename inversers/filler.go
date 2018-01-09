@@ -3,8 +3,8 @@ package inversers
 import (
 	"sync"
 	"fmt"
-	"log"
 	"os"
+	"log"
 	"../utils"
 	"../readers"
 )
@@ -13,7 +13,6 @@ type Filler struct {
 	index *Index
 	parentWaitGroup *sync.WaitGroup
 	waitGroup *sync.WaitGroup
-	sem chan bool
 	folder string
 	bufferSize int
 	readingChannel readingChannel
@@ -27,8 +26,7 @@ type writingChannel chan *toWrite
 func NewFiller(bufferSize int, folder string, readingChannel chan *readers.Document, routines int, parentWaitGroup *sync.WaitGroup) *Filler {
 	var waitGroup sync.WaitGroup
 	writingChannel := make(chan *toWrite)
-	sem := make(chan bool, routines)
-	index := NewIndex(50000, writingChannel)
+	index := NewIndex(10000000000, writingChannel)
 	return &Filler{
 		index: index,
 		bufferSize: bufferSize,
@@ -37,7 +35,6 @@ func NewFiller(bufferSize int, folder string, readingChannel chan *readers.Docum
 		folder: folder,
 		readingChannel: readingChannel,
 		writingChannel: writingChannel,
-		sem: sem,
 	}
 }
 
@@ -53,21 +50,22 @@ func (filler *Filler) Fill() {
 func (filler *Filler) readDocs() {
 	defer filler.waitGroup.Done()
 	for doc := range filler.readingChannel {
-		// filler.sem <- true
-		// go filler.addDoc(doc)
-		filler.addDoc(doc)
 		filler.docCounter++
+		filler.addDoc(doc)
 	}
-	// for i := 0; i < cap(filler.sem); i++ {
-	// 	<- filler.sem
-	// }
-	log.Printf("Done getting %s documents", filler.docCounter)
+	filler.finish()
+	log.Printf("Done getting %d documents", filler.docCounter)
+}
+
+func (filler *Filler) finish() {
+	filler.index.writeRemainingPostingLists()
 }
 
 // Add a document to the current block
 // NB: Might evolve to allow filling several blocks at the same time
 func (filler *Filler) addDoc(doc *readers.Document) {
-	// defer func(){<-filler.sem}()
+
+	// TODO: use routines to parallelize addDocToIndex and addDocToTerm
 
 	// Add the path to the doc to the map
 	filler.index.addDocToIndex(doc.Id, doc.Path)
@@ -79,13 +77,15 @@ func (filler *Filler) addDoc(doc *readers.Document) {
 }
 
 func (filler *Filler) writePostingLists() {
+	defer filler.waitGroup.Done()
 	for toWrite := range filler.writingChannel {
+		log.Printf("Getting posting list for %s", toWrite.term)
 		// Write it to the disk
 		termFile := fmt.Sprintf("./saved/%s", toWrite.term)
 		// If the file exists append it
 		if _, err := os.Stat(termFile); err == nil {
 			postingListSoFar := make(postingList)
-			err := utils.ReadGob(termFile, postingListSoFar)
+			err := utils.ReadGob(termFile, &postingListSoFar)
 			if err != nil {
 				panic(err)
 			}

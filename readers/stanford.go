@@ -60,9 +60,9 @@ func (reader *StanfordReader) Read() {
 }
 
 func (reader *StanfordReader) read(info os.FileInfo, path string) {
+	// Tell to the reader that the thread is done when read() returns
+	defer func() {<-reader.sem}()
 	if !info.IsDir() {
-		// Tell to the reader that the thread is done when read() returns
-		defer func() {<-reader.sem}()
 		// Read and update counter used to get the document ID
 		reader.Mux.Lock()
 		counter := reader.ReadCounter

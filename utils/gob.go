@@ -15,7 +15,7 @@ func FileToString(filePath string) *string {
 	return &fileString
 }
 
-func WriteGob(filePath string,object interface{}) error {
+func WriteGob(filePath string, object interface{}) error {
 	file, err := os.Create(filePath)
 	if err == nil {
 		encoder := gob.NewEncoder(file)
@@ -25,7 +25,7 @@ func WriteGob(filePath string,object interface{}) error {
 	return err
 }
 
-func ReadGob(filePath string,object interface{}) error {
+func ReadGob(filePath string, object interface{}) error {
 	file, err := os.Open(filePath)
 	if err == nil {
 		decoder := gob.NewDecoder(file)

@@ -2,8 +2,8 @@ package main
 
 import (
 	"sync"
-	"./parsers"
-	"./blocks"
+	"./readers"
+	"./inversers"
 	"log"
 	"time"
 )
@@ -11,12 +11,12 @@ import (
 func main() {
 	start := time.Now()
 	var waitGroup sync.WaitGroup
-	reader := parsers.NewStanfordReader(
+	reader := readers.NewStanfordReader(
 		"../consignes/Data/CS276/pa1-data/",
 		10,
 		&waitGroup,
 	)
-	blockFiller := blocks.NewFiller(
+	filler := inversers.NewFiller(
 		35000,
 		"./saved/",
 		reader.Docs,
@@ -26,7 +26,7 @@ func main() {
 	log.Println("Starting")
 	waitGroup.Add(2)
 	go reader.Read()
-	go blockFiller.Fill()
+	go filler.Fill()
 	waitGroup.Wait()
 	done := time.Now()
 	elapsed := done.Sub(start)

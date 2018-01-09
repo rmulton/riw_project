@@ -3,6 +3,7 @@ package inversers
 import (
 	"sync"
 	"fmt"
+	// "log"
 )
 
 // Index is used both as a reversed index for when index can be held in memory and as a buffer when it can't
@@ -16,7 +17,7 @@ type Index struct {
 	writingChannel writingChannel
 }
 
-func NewIndex(bufferSize int, writingChannel chan *toWrite) *Index {
+func NewIndex(bufferSize int, writingChannel writingChannel) *Index {
 	var mux sync.Mutex
 	postingLists := make(map[string]postingList)
 	docIDToFilePath := make(map[int]string)
@@ -36,10 +37,14 @@ func (index *Index) addDocToTerm(docID int, term string) {
 		index.postingLists[term] = make(postingList)
 	}
 	index.postingLists[term][docID]++
+	index.TermCounter++
 }
 
 // Add a new document in the index so that index keep trace of docID -> doc
 func (index *Index) addDocToIndex(docID int, docPath string) {
+	if index.TermCounter >= index.bufferSize {
+		index.writeBiggestPostingList()
+	}
 	index.DocIDToFilePath[docID] = docPath
 	index.DocCounter++
 }
@@ -47,7 +52,7 @@ func (index *Index) addDocToIndex(docID int, docPath string) {
 func (index *Index) writeBiggestPostingList() {
 	index.Mux.Lock()
 	// Find the longest posting list
-	termWithLongestPostingList := ""
+	var termWithLongestPostingList string
 	max := -1
 	for term, postingList := range index.postingLists {
 		if len(postingList) > max {
@@ -63,17 +68,20 @@ func (index *Index) writeBiggestPostingList() {
 
 	index.Mux.Unlock()
 
-	fmt.Printf("Writing posting list for %s", termWithLongestPostingList)
-	go longestPostingList.appendToTermFile(termWithLongestPostingList, index.writingChannel)
+	// log.Printf("Writing posting list for %s", termWithLongestPostingList)
+	// go longestPostingList.appendToTermFile(termWithLongestPostingList, index.writingChannel)
+	longestPostingList.appendToTermFile(termWithLongestPostingList, index.writingChannel)
+	index.TermCounter -= max
 }
 
 // When no more documents are to be read
 func (index *Index) writeRemainingPostingLists() {
+	defer close(index.writingChannel)
 	fmt.Printf("Writing remaining posting lists")
 	for term, postingList := range index.postingLists {
-		fmt.Printf("Writing posting list for %s", term)
-		go postingList.appendToTermFile(term, index.writingChannel)
+		// fmt.Printf("Writing posting list for %s", term)
+		postingList.appendToTermFile(term, index.writingChannel)
+		// go postingList.appendToTermFile(term, index.writingChannel)
 	}
-	close(index.writingChannel)
 }
 
