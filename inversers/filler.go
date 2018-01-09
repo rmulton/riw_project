@@ -10,7 +10,7 @@ import (
 )
 
 type Filler struct {
-	index *Index
+	index *BufferIndex
 	parentWaitGroup *sync.WaitGroup
 	waitGroup *sync.WaitGroup
 	folder string
@@ -26,7 +26,7 @@ type writingChannel chan *toWrite
 func NewFiller(bufferSize int, folder string, readingChannel chan *readers.Document, routines int, parentWaitGroup *sync.WaitGroup) *Filler {
 	var waitGroup sync.WaitGroup
 	writingChannel := make(chan *toWrite)
-	index := NewIndex(10000000000, writingChannel)
+	index := NewBufferIndex(500000, writingChannel)
 	return &Filler{
 		index: index,
 		bufferSize: bufferSize,
@@ -36,6 +36,7 @@ func NewFiller(bufferSize int, folder string, readingChannel chan *readers.Docum
 		readingChannel: readingChannel,
 		writingChannel: writingChannel,
 	}
+	// return an index
 }
 
 func (filler *Filler) Fill() {
@@ -59,6 +60,7 @@ func (filler *Filler) readDocs() {
 
 func (filler *Filler) finish() {
 	filler.index.writeRemainingPostingLists()
+	utils.WriteGob("./saved/idToPath.meta", filler.index.docIDToFilePath)
 }
 
 // Add a document to the current block
@@ -79,9 +81,9 @@ func (filler *Filler) addDoc(doc *readers.Document) {
 func (filler *Filler) writePostingLists() {
 	defer filler.waitGroup.Done()
 	for toWrite := range filler.writingChannel {
-		log.Printf("Getting posting list for %s", toWrite.term)
+		// log.Printf("Getting posting list for %s", toWrite.term)
 		// Write it to the disk
-		termFile := fmt.Sprintf("./saved/%s", toWrite.term)
+		termFile := fmt.Sprintf("./saved/%s.postings", toWrite.term)
 		// If the file exists append it
 		if _, err := os.Stat(termFile); err == nil {
 			postingListSoFar := make(postingList)

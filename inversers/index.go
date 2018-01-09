@@ -1,87 +1,44 @@
 package inversers
 
 import (
-	"sync"
 	"fmt"
-	// "log"
+	"../utils"
 )
 
-// Index is used both as a reversed index for when index can be held in memory and as a buffer when it can't
+// Index and BufferIndex are different structure so that to be sure to avoid conflicts between the index used by the user and the one used to build it.
 type Index struct {
-	Mux *sync.Mutex
-	bufferSize int
-	DocCounter int
-	TermCounter int
+	folderPath string
+	corpusSize int
 	postingLists map[string]postingList
-	DocIDToFilePath map[int]string
-	writingChannel writingChannel
+	docIDToFilePath map[int]string
 }
 
-func NewIndex(bufferSize int, writingChannel writingChannel) *Index {
-	var mux sync.Mutex
-	postingLists := make(map[string]postingList)
+func newIndex (folderPath string) *Index {
+	// corpusSize := 1
 	docIDToFilePath := make(map[int]string)
+	err := utils.ReadGob("./saved/IDToPath.meta", &docIDToFilePath)
+	if err != nil {
+		panic(err)
+	}
+	postingLists := make(map[string]postingList)
 	return &Index{
-		writingChannel: writingChannel,
-		Mux: &mux,
-		bufferSize: bufferSize,
+		folderPath: folderPath,
+		docIDToFilePath: docIDToFilePath,
 		postingLists: postingLists,
-		DocIDToFilePath: docIDToFilePath,
 	}
 }
 
-// Used to fill the posting lists
-func (index *Index) addDocToTerm(docID int, term string) {
-	_, exists := index.postingLists[term]
-	if !exists {
-		index.postingLists[term] = make(postingList)
+func (index *Index) loadTerm(term string) {
+	termFile := fmt.Sprintf("./saved/%s.postings", term)
+	postingList := make(postingList)
+	err := utils.ReadGob(termFile, &postingList)
+	if err != nil {
+		panic(err)
 	}
-	index.postingLists[term][docID]++
-	index.TermCounter++
+	index.postingLists[term] = postingList
 }
 
-// Add a new document in the index so that index keep trace of docID -> doc
-func (index *Index) addDocToIndex(docID int, docPath string) {
-	if index.TermCounter >= index.bufferSize {
-		index.writeBiggestPostingList()
-	}
-	index.DocIDToFilePath[docID] = docPath
-	index.DocCounter++
+// TODO: make it safe
+func (index *Index) unloadTerm(term string) {
+	index.postingLists[term] = nil
 }
-
-func (index *Index) writeBiggestPostingList() {
-	index.Mux.Lock()
-	// Find the longest posting list
-	var termWithLongestPostingList string
-	max := -1
-	for term, postingList := range index.postingLists {
-		if len(postingList) > max {
-			termWithLongestPostingList = term
-			max = len(postingList)
-		}
-	}
-
-	// Copy it to let other routines get access to the index, and remove it from the index
-	longestPostingList := index.postingLists[termWithLongestPostingList]
-	emptyPostingList := make(postingList)
-	index.postingLists[termWithLongestPostingList] = emptyPostingList
-
-	index.Mux.Unlock()
-
-	// log.Printf("Writing posting list for %s", termWithLongestPostingList)
-	// go longestPostingList.appendToTermFile(termWithLongestPostingList, index.writingChannel)
-	longestPostingList.appendToTermFile(termWithLongestPostingList, index.writingChannel)
-	index.TermCounter -= max
-}
-
-// When no more documents are to be read
-func (index *Index) writeRemainingPostingLists() {
-	defer close(index.writingChannel)
-	fmt.Printf("Writing remaining posting lists")
-	for term, postingList := range index.postingLists {
-		// fmt.Printf("Writing posting list for %s", term)
-		postingList.appendToTermFile(term, index.writingChannel)
-		// go postingList.appendToTermFile(term, index.writingChannel)
-	}
-}
-
