@@ -1,9 +1,11 @@
 package inversers
 
 import (
+	"math"
 )
 
-type PostingList map[int]int
+type PostingList map[int]float64
+type VectorPostingList map[int][]float64
 
 type toWrite struct {
 	term string
@@ -23,4 +25,55 @@ func (postingList PostingList) MergeWith(otherPostingList PostingList) {
 			postingList[docID] = frqc
 		}
 	}
+}
+
+func MergeToVector(postingLists []PostingList) VectorPostingList{
+	vectorPostingList := make(VectorPostingList)
+	for i, postingList := range postingLists {
+		for docID, frqc := range postingList {
+			_, exists := vectorPostingList[docID]
+			if !exists {
+				vectorPostingList[docID] = make([]float64, len(postingLists))
+			}
+			vectorPostingList[docID][i] = frqc
+		}
+	}
+	return vectorPostingList
+}
+
+func (vecPostingList VectorPostingList) ToAngleTo(vector []float64) PostingList {
+	output := make(PostingList)
+	for docID, docVector := range vecPostingList {
+		output[docID] = angle(docVector, vector)
+	}
+	return output
+}
+
+func angle(v1 []float64, v2 []float64) float64 {
+	n1 := norm(v1)
+	n2 := norm(v2)
+	s := scalar(v1, v2)
+	cos := s/(n1*n2)
+	angle := math.Acos(cos)
+	return angle
+}
+
+func norm(v []float64) float64 {
+	var norm float64
+	for _, coord := range v {
+		norm += coord*coord
+	}
+	floatNorm := math.Sqrt(norm)
+	return floatNorm
+}
+
+func scalar(v1 []float64, v2 []float64) float64 {
+	if len(v1) != len(v2) {
+		panic("Trying to compute scalar product of vectors of different sizes")
+	}
+	var output float64
+	for i, score := range v1 {
+		output += score*v2[i]
+	}
+	return output
 }

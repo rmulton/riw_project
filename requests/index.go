@@ -29,6 +29,15 @@ func NewIndex (folderPath string) *Index {
 	}
 }
 
+func (index *Index) GetTerms(terms []string) (error, []inversers.PostingList) {
+	output := make([]inversers.PostingList, len(terms))
+	err := index.LoadTerms(terms)
+	for i, term := range terms {
+		output[i] = index.postingLists[term]
+	}
+	return err, output
+}
+
 func (index *Index) LoadTerms(terms []string) error {
 	for _, term := range terms {
 		err := index.loadTerm(term)

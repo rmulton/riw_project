@@ -26,13 +26,13 @@ func main() {
 	// )
 	// log.Println("Starting")
 	// waitGroup.Add(2)
-	// go reader.Read(
+	// go reader.Read()
 	// go filler.Fill()
 	// waitGroup.Wait()
 	// done := time.Now()
 	// elapsed := done.Sub(start)
 	// log.Printf("Done in %v", elapsed)
 	engine := requests.NewEngine("./saved/")
-	engine.Request("stanford doctor kjfld")
+	engine.Request("stanford doctor medical")
 	
 }

@@ -31,6 +31,7 @@ func requestAnd(request string, index *Index) *inversers.PostingList{
 	terms := *normalizers.Normalize(&request, &[]string{})
 	err := index.LoadTerms(terms)
 	if err != nil {
+		fmt.Println(err)
 		fmt.Println("One of the terms is not in the collection")
 		return nil
 	}

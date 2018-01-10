@@ -11,8 +11,8 @@ type Engine struct {
 
 func NewEngine(folder string) *Engine {
 	index := NewIndex(folder)
-	requestHandler := NewBinaryRequestHandler()
-	outputFormater := NewDumbOutputFormater()
+	requestHandler := NewVectorizedRequestHandler()
+	outputFormater := NewSortDocsOutputFormater()
 	return &Engine{
 		index: index,
 		requestHandler: requestHandler,
