@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"log"
+	"path/filepath"
 	"../utils"
 	"../readers"
 )
@@ -60,7 +61,24 @@ func (filler *Filler) readDocs() {
 
 func (filler *Filler) finish() {
 	filler.index.writeRemainingPostingLists()
+	// Warning: Do not use go routine otherwise it will conflict with the next line
+	filler.toTfIdf()
 	utils.WriteGob("./saved/idToPath.meta", filler.index.docIDToFilePath)
+}
+
+func (filler *Filler) toTfIdf() {
+	log.Println("Computing tf-idf scores from frequencies")
+	filepath.Walk("./saved/", func(path string, info os.FileInfo, err error) error {
+		if !info.IsDir() {
+			err, postingList := PostingListFromFile(path)
+			if err != nil {
+				return err
+			}
+			postingList.tfIdf(filler.docCounter) // TODO ? check that docCounter = len(os.listdir)
+			utils.WriteGob(path, postingList)
+		}
+		return nil
+	})
 }
 
 // Add a document to the current block
@@ -86,8 +104,7 @@ func (filler *Filler) writePostingLists() {
 		termFile := fmt.Sprintf("./saved/%s.postings", toWrite.term)
 		// If the file exists append it
 		if _, err := os.Stat(termFile); err == nil {
-			postingListSoFar := make(PostingList)
-			err := utils.ReadGob(termFile, &postingListSoFar)
+			err, postingListSoFar := PostingListFromFile(termFile)
 			if err != nil {
 				panic(err)
 			}

@@ -15,7 +15,6 @@ type Index struct {
 }
 
 func NewIndex (folderPath string) *Index {
-	// corpusSize := 1
 	docIDToFilePath := make(map[int]string)
 	err := utils.ReadGob("./saved/IDToPath.meta", &docIDToFilePath)
 	if err != nil {
@@ -50,8 +49,7 @@ func (index *Index) LoadTerms(terms []string) error {
 
 func (index *Index) loadTerm(term string) error {
 	termFile := fmt.Sprintf("./saved/%s.postings", term)
-	postingList := make(inversers.PostingList)
-	err := utils.ReadGob(termFile, &postingList)
+	err, postingList := inversers.PostingListFromFile(termFile)	
 	if err != nil {
 		return err
 	}

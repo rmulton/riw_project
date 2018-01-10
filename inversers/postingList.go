@@ -2,6 +2,7 @@ package inversers
 
 import (
 	"math"
+	"../utils"
 )
 
 type PostingList map[int]float64
@@ -14,6 +15,23 @@ type toWrite struct {
 
 func (postingList PostingList) appendToTermFile(term string, writingChannel writingChannel) {
 	writingChannel <- &toWrite{term, postingList}
+}
+
+func PostingListFromFile(path string) (error, PostingList) {
+	postingList := make(PostingList)
+	err := utils.ReadGob(path, &postingList)
+	if err != nil {
+		return err, nil
+	}
+	return nil, postingList
+}
+
+func (postingList PostingList) tfIdf(corpusSize int) {
+	idf := float64(corpusSize)/float64(len(postingList)) // Inverse of the proportion of documents that contain the term
+	for docID, frqc := range postingList {
+		tf := frqc // Frequency of the term in the document
+		postingList[docID] = (1 + math.Log(tf)) * math.Log(idf)
+	}
 }
 
 func (postingList PostingList) MergeWith(otherPostingList PostingList) {

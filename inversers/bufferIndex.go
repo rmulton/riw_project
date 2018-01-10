@@ -2,7 +2,7 @@ package inversers
 
 import (
 	"sync"
-	"fmt"
+	"log"
 )
 
 // BufferIndex is used both as a reversed index for when index can be held in memory and as a buffer when it can't
@@ -76,7 +76,7 @@ func (index *BufferIndex) writeBiggestPostingList() {
 // When no more documents are to be read
 func (index *BufferIndex) writeRemainingPostingLists() {
 	defer close(index.writingChannel)
-	fmt.Printf("Writing remaining posting lists")
+	log.Printf("Writing remaining posting lists")
 	for term, postingList := range index.postingLists {
 		// fmt.Printf("Writing posting list for %s", term)
 		postingList.appendToTermFile(term, index.writingChannel)
