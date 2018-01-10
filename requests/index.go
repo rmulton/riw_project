@@ -41,7 +41,7 @@ func (index *Index) LoadTerms(terms []string) error {
 	for _, term := range terms {
 		err := index.loadTerm(term)
 		if err != nil {
-			return err
+			fmt.Printf("%s is not in the index, it won't be taken into account\n", term)
 		}
 	}
 	return nil

@@ -1,6 +1,7 @@
 package requests
 
 import (
+	"math"
 	"fmt"
 	"sort"
 	"../inversers"
@@ -23,7 +24,8 @@ func (fmter *sortDocsOutputFormater) output(res *inversers.PostingList) {
 		for _, score := range scores {
 			for _, docID := range scoresToDocs[score] {
 				rank++
-				fmt.Printf("%d: Doc %d with score %f\n", rank, docID, score)
+				normalizedScore := score/math.Acos(0)*100
+				fmt.Printf("%d: Doc %d with score %f %%\n", rank, docID, normalizedScore)
 			}
 		}
 	} else {

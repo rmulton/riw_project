@@ -6,8 +6,18 @@ import (
 	// "./inversers"
 	// "log"
 	// "time"
+	"bufio"
+	"os"
+	"fmt"
 	"./requests"
 )
+
+func readInput() string {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("\n>> Please enter request: ")
+	text, _ := reader.ReadString('\n')
+	return text
+}
 
 func main() {
 	// start := time.Now()
@@ -33,6 +43,10 @@ func main() {
 	// elapsed := done.Sub(start)
 	// log.Printf("Done in %v", elapsed)
 	engine := requests.NewEngine("./saved/")
-	engine.Request("stanford doctor medical")
+	var req string
+	for {
+		req = readInput()
+		engine.Request(req)
+	}
 	
 }
