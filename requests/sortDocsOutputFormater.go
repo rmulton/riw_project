@@ -25,7 +25,9 @@ func (fmter *sortDocsOutputFormater) output(res *inversers.PostingList) {
 			for _, docID := range scoresToDocs[score] {
 				rank++
 				normalizedScore := score/math.Acos(0)*100
-				fmt.Printf("%d: Doc %d with score %f %%\n", rank, docID, normalizedScore)
+				if rank <= 20 {
+					fmt.Printf("%d: Doc %d with score %f %%\n", rank, docID, normalizedScore)
+				}
 			}
 		}
 	} else {
