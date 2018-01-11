@@ -41,7 +41,7 @@ func (index *BufferIndex) addDocToTerm(docID int, term string) {
 
 // Add a new document in the index so that index keep trace of docID -> doc
 func (index *BufferIndex) addDocToIndex(docID int, docPath string) {
-	if index.bufferCounter >= index.bufferSize { // NB: This is a very important decision for the system. Using the biggest posting list might not be the best one.
+	if index.bufferCounter >= index.bufferSize && index.bufferSize != -1 { // NB: This is a very important decision for the system. Using the biggest posting list might not be the best one.
 		index.writeBiggestPostingList()
 	}
 	index.docIDToFilePath[docID] = docPath
@@ -74,12 +74,18 @@ func (index *BufferIndex) writeBiggestPostingList() {
 }
 
 // When no more documents are to be read
-func (index *BufferIndex) writeRemainingPostingLists() {
+func (index *BufferIndex) writeAllPostingLists() {
 	defer close(index.writingChannel)
 	log.Printf("Writing remaining posting lists")
 	for term, postingList := range index.postingLists {
 		// fmt.Printf("Writing posting list for %s", term)
 		postingList.appendToTermFile(term, index.writingChannel)
 		// go postingList.appendToTermFile(term, index.writingChannel)
+	}
+}
+
+func (index *BufferIndex) toTfIdf() {
+	for _, postingList := range index.postingLists {
+		postingList.tfIdf(index.corpusSize)
 	}
 }
