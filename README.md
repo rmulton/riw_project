@@ -13,6 +13,7 @@ Project done during Céline Hudelot class on Information Retrieval.
 # Design
 NB : if the collection (not the index) cannot be held in memory, check if it would be more efficient to use BSBI.
 ## Assumptions
+The priority is to have the fastest response to request time. (Which can harm the index building time).
 Any document of the collection can be held in memory.
 Compute data for the user asap.
 ## Use cases
