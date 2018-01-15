@@ -7,27 +7,22 @@ import (
 	"log"
 	"../normalizers"
 	"../utils"
+	"../indexes"
 )
 
 type StanfordReader struct {
 	collectionPath string
 	// WaitGroup for main program
 	parentWaitGroup *sync.WaitGroup
-	Docs chan *Document
+	Docs chan *indexes.Document
 	ReadCounter int
 	Mux sync.Mutex
 	sem chan bool
 }
 
-type Document struct {
-	Path string
-	Id int
-	NormalizedTokens *[]string
-}
-
 func NewStanfordReader(collectionPath string, routines int, parentWaitGroup *sync.WaitGroup) *StanfordReader {
 	var mux sync.Mutex
-	docs := make(chan *Document)
+	docs := make(chan *indexes.Document)
 	sem := make(chan bool, routines)
 	reader := StanfordReader{
 		collectionPath: collectionPath,
@@ -71,9 +66,9 @@ func (reader *StanfordReader) read(info os.FileInfo, path string) {
 		// Get file content as a string
 		stringFile := utils.FileToString(path)
 		// Transform it to a list of normalized tokens
-		normalizedTokens := normalizers.Normalize(stringFile, &[]string{})
-		readDoc := &Document{
-			Id: counter,
+		normalizedTokens := normalizers.Normalize(stringFile, []string{})
+		readDoc := &indexes.Document{
+			ID: counter,
 			Path: path,
 			NormalizedTokens: normalizedTokens,
 		}

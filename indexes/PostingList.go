@@ -1,4 +1,4 @@
-package inversers
+package indexes
 
 import (
 	"math"
@@ -7,15 +7,6 @@ import (
 
 type PostingList map[int]float64
 type VectorPostingList map[int][]float64
-
-type toWrite struct {
-	term string
-	postingList PostingList
-}
-
-func (postingList PostingList) appendToTermFile(term string, writingChannel writingChannel) {
-	writingChannel <- &toWrite{term, postingList}
-}
 
 func PostingListFromFile(path string) (error, PostingList) {
 	postingList := make(PostingList)
@@ -26,7 +17,7 @@ func PostingListFromFile(path string) (error, PostingList) {
 	return nil, postingList
 }
 
-func (postingList PostingList) tfIdf(corpusSize int) {
+func (postingList PostingList) TfIdf(corpusSize int) {
 	idf := float64(corpusSize)/float64(len(postingList)) // Inverse of the proportion of documents that contain the term
 	for docID, frqc := range postingList {
 		tf := frqc // Frequency of the term in the document
@@ -45,9 +36,10 @@ func (postingList PostingList) MergeWith(otherPostingList PostingList) {
 	}
 }
 
-func MergeToVector(postingLists []PostingList) VectorPostingList{
+func MergeToVector(postingLists map[string]PostingList) VectorPostingList{
 	vectorPostingList := make(VectorPostingList)
-	for i, postingList := range postingLists {
+	var i int
+	for _, postingList := range postingLists {
 		for docID, frqc := range postingList {
 			_, exists := vectorPostingList[docID]
 			if !exists {
@@ -55,6 +47,7 @@ func MergeToVector(postingLists []PostingList) VectorPostingList{
 			}
 			vectorPostingList[docID][i] = frqc
 		}
+		i++
 	}
 	return vectorPostingList
 }

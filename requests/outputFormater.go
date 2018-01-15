@@ -1,9 +1,9 @@
 package requests
 
 import (
-	"../inversers"
+	"../indexes"
 )
 
 type outputFormater interface {
-	output(*inversers.PostingList)
+	output(*indexes.PostingList)
 }

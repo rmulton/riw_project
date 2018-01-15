@@ -4,7 +4,7 @@ import (
 	"math"
 	"fmt"
 	"sort"
-	"../inversers"
+	"../indexes"
 )
 
 type sortDocsOutputFormater struct {
@@ -17,7 +17,7 @@ func NewSortDocsOutputFormater() *sortDocsOutputFormater {
 	return &sortDocsOutputFormater{}
 }
 
-func (fmter *sortDocsOutputFormater) output(res *inversers.PostingList) {
+func (fmter *sortDocsOutputFormater) output(res *indexes.PostingList) {
 	var rank int
 	scores, scoresToDocs := fmter.sort(res)
 	if scoresToDocs != nil && scores != nil {
@@ -35,7 +35,7 @@ func (fmter *sortDocsOutputFormater) output(res *inversers.PostingList) {
 	}
 }
 
-func (fmter *sortDocsOutputFormater) sort(res *inversers.PostingList) ([]float64, scoresToDocs) {
+func (fmter *sortDocsOutputFormater) sort(res *indexes.PostingList) ([]float64, scoresToDocs) {
 	scores := make([]float64, 0)
 	scoresToDocs := make(scoresToDocs)
 	var docCounter int

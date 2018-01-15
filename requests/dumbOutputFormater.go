@@ -2,7 +2,7 @@ package requests
 
 import (
 	"fmt"
-	"../inversers"
+	"../indexes"
 )
 
 type dumbOutputFormater struct {
@@ -13,7 +13,7 @@ func NewDumbOutputFormater() *dumbOutputFormater {
 	return &dumbOutputFormater{}
 }
 
-func (fmter *dumbOutputFormater) output(res *inversers.PostingList) {
+func (fmter *dumbOutputFormater) output(res *indexes.PostingList) {
 	if res != nil {
 		fmt.Printf("%v\n", res)
 		fmt.Printf("Length: %v\n", len(*res))

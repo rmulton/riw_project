@@ -1,28 +1,29 @@
 package requests
 
 import (
-	"../inversers"
+	"../indexes"
 	"../normalizers"
-	"fmt"
+	// "fmt"
 )
 
 type vectorizedRequestHandler struct {
-
+	index indexes.RequestableIndex
 }
 
 
-func NewVectorizedRequestHandler() *vectorizedRequestHandler {
-	return &vectorizedRequestHandler{}
+func NewVectorizedRequestHandler(index indexes.RequestableIndex) *vectorizedRequestHandler {
+	return &vectorizedRequestHandler{index}
 }
 
-func (reqHandler *vectorizedRequestHandler) request(request string, index *Index) *inversers.PostingList {
+func (reqHandler *vectorizedRequestHandler) request(request string) *indexes.PostingList {
 	// Tokenize and normalize the request
-	terms := *normalizers.Normalize(&request, &[]string{})
-	err, postingLists := index.GetTerms(terms)
-	if err != nil {
-		fmt.Println("One of the terms is not in the collection")
-		return nil
-	}
+	terms := normalizers.Normalize(request, []string{})
+	postingListsForTerms := reqHandler.index.GetPostingListsForTerms(terms)
+	// err, postingLists := reqHandler.index.GetTerms(terms) // TODO: Move to the index
+	// if err != nil {
+		// fmt.Println("One of the terms is not in the collection")
+		// return nil
+	// }
 
 	// Create the vector representing the request
 	nTerms := len(terms)
@@ -32,7 +33,7 @@ func (reqHandler *vectorizedRequestHandler) request(request string, index *Index
 	}
 
 	// Compute the angles between the request and the docs
-	vectorizedPostingList := inversers.MergeToVector(postingLists)
+	vectorizedPostingList := indexes.MergeToVector(postingListsForTerms)
 	docScores := vectorizedPostingList.ToAngleTo(reqVector)
 	return &docScores
 }

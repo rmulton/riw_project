@@ -6,13 +6,14 @@ import (
 	"encoding/gob"
 )
 
-func FileToString(filePath string) *string {
+// NB: it is often faster to pass by value rather than difference in golang
+func FileToString(filePath string) string {
 	dat, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		panic(err)
 	}
 	fileString := string(dat)
-	return &fileString
+	return fileString
 }
 
 func WriteGob(filePath string, object interface{}) error {

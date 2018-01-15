@@ -83,5 +83,6 @@ Utils contains functions to
 - Transform files to string
 - Read and write Gob files to persist golang structures
 
-# Bugs
-- Binary request with spaces between words work, which is weird
+# Further work
+- Compare persisting maps with persisting tuples or binaries that represent the posting lists and use an index
+- Write the distributed version (separate the writer from the index builder; add the network layer)

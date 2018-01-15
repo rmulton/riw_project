@@ -1,25 +1,26 @@
 package requests
 
 import (
-	"fmt"
+	// "fmt"
 	"strings"
-	"../inversers"
+	"../indexes"
 	"../normalizers"
 )
 
 type binaryRequestHandler struct {
+	index indexes.RequestableIndex
 
 }
 
-func NewBinaryRequestHandler() *binaryRequestHandler {
-	return &binaryRequestHandler{}
+func NewBinaryRequestHandler(index indexes.RequestableIndex) *binaryRequestHandler {
+	return &binaryRequestHandler{index}
 }
 
-func (reqHandler *binaryRequestHandler) request(request string, index *Index) *inversers.PostingList {
+func (reqHandler *binaryRequestHandler) request(request string) *indexes.PostingList {
 	conjClauses := strings.Split(request, "|")
-	res := make(inversers.PostingList)
+	res := make(indexes.PostingList)
 	for _, clause := range conjClauses {
-		accurateDocs := requestAnd(clause, index)
+		accurateDocs := reqHandler.requestAnd(clause)
 		if accurateDocs != nil {
 			res.MergeWith(*accurateDocs) // TODO: Check that there is no memory wasted
 		}
@@ -27,19 +28,14 @@ func (reqHandler *binaryRequestHandler) request(request string, index *Index) *i
 	return &res
 }
 
-func requestAnd(request string, index *Index) *inversers.PostingList{
-	terms := *normalizers.Normalize(&request, &[]string{})
-	err := index.LoadTerms(terms)
-	if err != nil {
-		fmt.Println(err)
-		fmt.Println("One of the terms is not in the collection")
-		return nil
-	}
+func (reqHandler *binaryRequestHandler) requestAnd(request string) *indexes.PostingList {
+	terms := normalizers.Normalize(request, []string{})
+	postingListsForTerms := reqHandler.index.GetPostingListsForTerms(terms)
 	
 	var min int
 	var bestTerm string
 	for i, term := range terms {
-		postingListSize := len(index.postingLists[term])
+		postingListSize := len(postingListsForTerms[term])
 		if postingListSize <= min || i == 0 {
 			min = postingListSize
 			bestTerm = term
@@ -47,8 +43,8 @@ func requestAnd(request string, index *Index) *inversers.PostingList{
 	}
 	
 	// Copy the shortest posting list
-	accurateDocs := make(inversers.PostingList)
-	for k, v := range index.postingLists[bestTerm] {
+	accurateDocs := make(indexes.PostingList)
+	for k, v := range postingListsForTerms[bestTerm] {
 		accurateDocs[k] = v
 	}
 	
@@ -56,7 +52,7 @@ func requestAnd(request string, index *Index) *inversers.PostingList{
 	for docID, _ := range accurateDocs {
 		for _, term := range terms {
 			if term != bestTerm {
-				newFrqc, exists := index.postingLists[term][docID]
+				newFrqc, exists := postingListsForTerms[term][docID]
 				if !exists {
 					delete(accurateDocs, docID)
 				} else {

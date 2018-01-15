@@ -1,9 +1,9 @@
 package requests
 
 import (
-	"../inversers"
+	"../indexes"
 )
 
 type requestHandler interface {
-	request(string, *Index) *inversers.PostingList
+	request(string) *indexes.PostingList
 }
