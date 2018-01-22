@@ -1,7 +1,6 @@
 package requests
 
 import (
-	"fmt"
 	"../indexes"
 	"../normalizers"
 )
@@ -33,8 +32,6 @@ func (reqHandler *andRequestHandler) request(request string) *indexes.PostingLis
 	for k, v := range postingListsForTerms[bestTerm] {
 		accurateDocs[k] = v
 	}
-
-	fmt.Printf("%v", accurateDocs)
 
 	// Add frequencies and remove inaccurate terms
 	for docID, _ := range accurateDocs {

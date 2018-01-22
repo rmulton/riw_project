@@ -13,7 +13,7 @@ type OnDiskIndex struct {
 
 func OnDiskIndexFromFolder(folderPath string) *OnDiskIndex {
 	docIDToFilePath := make(map[int]string)
-	err := utils.ReadGob("./saved/IDToPath.meta", &docIDToFilePath)
+	err := utils.ReadGob("./saved/meta/iDToPath", &docIDToFilePath)
 	if err != nil {
 		panic(err)
 	}
@@ -29,7 +29,7 @@ func OnDiskIndexFromFolder(folderPath string) *OnDiskIndex {
 }
 
 func (odi *OnDiskIndex) loadTerm(term string) error {
-	termFile := fmt.Sprintf("./saved/%s.postings", term)
+	termFile := fmt.Sprintf("./saved/postings/%s", term)
 	_, exists := odi.index.postingLists[term]
 	if !exists {
 		err, postingList := PostingListFromFile(termFile)	

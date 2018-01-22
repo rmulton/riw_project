@@ -9,15 +9,17 @@ import (
 )
 
 type sortDocsOutputFormater struct {
+	documentsFolder string
 	docIDToPath map[int]string
 }
 
 type scoresToDocs map[float64][]int
 
-func NewSortDocsOutputFormater() *sortDocsOutputFormater {
+func NewSortDocsOutputFormater(documentsFolder string) *sortDocsOutputFormater {
 	docIDToPath := make(map[int]string)
-	utils.ReadGob("./saved/meta/idToPath", &docIDToPath)
+	utils.ReadGob(documentsFolder+"/meta/idToPath", &docIDToPath) // TODO: change to use a random filepath in the index
 	return &sortDocsOutputFormater{
+		documentsFolder: documentsFolder,
 		docIDToPath: docIDToPath,
 	}
 }

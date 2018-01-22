@@ -68,6 +68,8 @@ func (buffer *BufferIndex) writeBiggestPostingList() {
 	buffer.appendToTermFile(longestPostingList, termWithLongestPostingList)
 }
 
+// TODO : avoid code repition by building buffer.appendPostingListOnDisk(term)
+
 // Should be done by the buffer index instead
 func (buffer *BufferIndex) appendToTermFile(postingList indexes.PostingList, term string) {
 	buffer.writingChannel <- indexes.NewBufferPostingList(term, postingList)
@@ -89,5 +91,5 @@ func (buffer *BufferIndex) toTfIdf(corpusSize int) {
 }
 
 func (buffer *BufferIndex) writeDocIDToFilePath(path string) {
-	utils.WriteGob("./saved/idToPath.meta", buffer.index.GetDocIDToFilePath())
+	utils.WriteGob(path, buffer.index.GetDocIDToFilePath())
 }
