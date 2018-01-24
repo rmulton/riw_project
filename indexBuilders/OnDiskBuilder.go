@@ -148,28 +148,12 @@ func (builder *OnDiskBuilder) finish() {
 	// Keep trace of the list
 	onDiskOnly, inMemoryOnly, onDiskAndInMemory := builder.categorizeTerms()
 	builder.waitGroup.Add(3)
+	// Here we try to compute tf-idf scores in memory as much as possible
 	// NB : use workers pool
 	go builder.writeTfIdfInMemoryTerms(inMemoryOnly)
 	// NB : use workers pool and walk for this one
 	go builder.tfIdfOnDiskTerms(onDiskOnly)
 	go builder.mergeDiskMemoryThenTfIdfTerms(onDiskAndInMemory)
-	/*
-	// Here we try to compute tf-idf scores in memory as much as possible
-	// Write on disk posting lists for terms that are not only in the buffer
-	builder.index.writePostingListsIfTermOnDisk()
-
-	// Prepare for asynchronous computing
-	var wg *sync.WaitGroup
-	wg.Add(2)
-	// Get tf-idf scores for terms that are not on the disk yet
-	go builder.index.toTfIdf(builder.docCounter, wg)
-	// Warning: Do not use go routine otherwise it will conflict with the next line
-	// Get tf-idf scores for on disk posting lists
-	go builder.toTfIdf(wg)
-	wg.Wait()
-	// Write posting lists that remain in the index buffer now that files are 
-	builder.index.writeAllPostingLists()
-	*/
 	go builder.writeDocIDToFilePath("./saved/meta/idToPath")
 }
 
