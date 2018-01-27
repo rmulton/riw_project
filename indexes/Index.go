@@ -57,8 +57,8 @@ func (index *Index) AddDocToIndex(docID int, docPath string) {
 }
 
 func (index *Index) ClearPostingListFor(term string) {
-	emptyPostingList := make(PostingList)
-	index.postingLists[term] = emptyPostingList
+	delete(index.postingLists, term)
+	// TODO: decide which one is the more efficient
+	// emptyPostingList := make(PostingList)
+	// index.postingLists[term] = emptyPostingList
 }
-
-// TODO: computations on the posting lists should be done by the index

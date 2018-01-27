@@ -43,7 +43,9 @@ func (odi *OnDiskIndex) loadTerm(term string) error {
 
 // TODO: make it safe
 func (odi *OnDiskIndex) unloadTerm(term string) {
-	odi.index.postingLists[term] = nil
+	// TODO: check which one is the most efficient
+	delete(odi.index.postingLists, term)
+	// odi.index.postingLists[term] = nil
 }
 
 func (odi *OnDiskIndex) GetPostingListsForTerms(terms []string) map[string]PostingList {
