@@ -60,6 +60,7 @@ func TestMergeToVector(t *testing.T) {
 	}
 }
 
+// TODO: test weird values on angles etc
 func TestToAngleTo(t *testing.T) {
 	vecPostingList := MergeToVector(somePostingLists)
 	docsAngleScore := vecPostingList.ToAnglesTo(reqVec)
@@ -68,5 +69,3 @@ func TestToAngleTo(t *testing.T) {
 	}
 	
 }
-// test operations like angles
-// test weird values on angles etc
