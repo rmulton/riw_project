@@ -34,12 +34,23 @@ func (index *Index) PrintPostings() {
 	}
 }
 
+// NB: In some cases, it would be smarter to compute the corpus' size instead of getting
+// it as an argument. We chose not to because of the on disk index use case. Indeed, since
+// there are two corpus sizes (one that might be calculated by Index and the one of the
+// collection), there might be some confusion.
+// Our choice was to write Index as a dumb data store with little functionality and to 
+// delegate it to the BufferIndex and the builders. This way, Index can be used in a variety
+// of cases
 func (index *Index) ToTfIdf(corpusSize int) {
 	// TODO: Parallelize
 	for _, postingList := range index.postingLists {
 		postingList.TfIdf(corpusSize)
 	}
 }
+
+// NB: In some cases, it might be usefull to merge AddDocToTerm and AddDocToIndex.
+// However, we chose not to because of the on disk index use case. Indeed, the document counter
+// shouldn't be held by the index but by the buffer index.
 
 // Used to fill the posting lists
 func (index *Index) AddDocToTerm(docID int, term string) {

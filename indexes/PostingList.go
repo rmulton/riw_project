@@ -5,8 +5,10 @@ import (
 	"../utils"
 )
 
+// PostingList is a docID -> score map
 type PostingList map[int]float64
-type VectorPostingList map[int][]float64
+// VectorPostingList is a docID -> (term -> score) map
+type VectorPostingList map[int]map[string]float64
 
 func PostingListFromFile(path string) (error, PostingList) {
 	postingList := make(PostingList)
@@ -25,6 +27,9 @@ func (postingList PostingList) TfIdf(corpusSize int) {
 	}
 }
 
+// MergeWith merges two posting list to a posting list. The score of the output is
+// the addition of the scores from the two posting lists - if a document is not in
+// one of the posting lists, we do as if the score was zero.
 func (postingList PostingList) MergeWith(otherPostingList PostingList) {
 	for docID, frqc := range otherPostingList {
 		_, exists := postingList[docID]
@@ -34,57 +39,4 @@ func (postingList PostingList) MergeWith(otherPostingList PostingList) {
 			postingList[docID] = frqc
 		}
 	}
-}
-
-func MergeToVector(postingLists map[string]PostingList) VectorPostingList{
-	vectorPostingList := make(VectorPostingList)
-	var i int
-	for _, postingList := range postingLists {
-		for docID, frqc := range postingList {
-			_, exists := vectorPostingList[docID]
-			if !exists {
-				vectorPostingList[docID] = make([]float64, len(postingLists))
-			}
-			vectorPostingList[docID][i] = frqc
-		}
-		i++
-	}
-	return vectorPostingList
-}
-
-func (vecPostingList VectorPostingList) ToAngleTo(vector []float64) PostingList {
-	output := make(PostingList)
-	for docID, docVector := range vecPostingList {
-		output[docID] = angle(docVector, vector)
-	}
-	return output
-}
-
-func angle(v1 []float64, v2 []float64) float64 {
-	n1 := norm(v1)
-	n2 := norm(v2)
-	s := scalar(v1, v2)
-	cos := s/(n1*n2)
-	angle := math.Acos(cos)
-	return angle
-}
-
-func norm(v []float64) float64 {
-	var norm float64
-	for _, coord := range v {
-		norm += coord*coord
-	}
-	floatNorm := math.Sqrt(norm)
-	return floatNorm
-}
-
-func scalar(v1 []float64, v2 []float64) float64 {
-	if len(v1) != len(v2) {
-		panic("Trying to compute scalar product of vectors of different sizes")
-	}
-	var output float64
-	for i, score := range v1 {
-		output += score*v2[i]
-	}
-	return output
 }
