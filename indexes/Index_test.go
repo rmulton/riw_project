@@ -6,8 +6,6 @@ import(
 	"math"
 )
 
-var testIndex = NewEmptyIndex()
-
 type testDoc struct {
 	id int
 	path string
@@ -115,6 +113,7 @@ var expectedClearLulu = map[string]PostingList {
 
 func TestIndexFrequencyAndTfIdf(t *testing.T) {
 	// Simple test
+	var testIndex = NewEmptyIndex()
 	for _, doc := range someDocs {
 		testIndex.AddDocToIndex(doc.id, doc.path)
 		for _, term := range doc.terms {
@@ -133,6 +132,7 @@ func TestIndexFrequencyAndTfIdf(t *testing.T) {
 
 func TestClearPostingList(t *testing.T) {
 	// Simple test
+	var testIndex = NewEmptyIndex()
 	for _, doc := range someDocs {
 		testIndex.AddDocToIndex(doc.id, doc.path)
 		for _, term := range doc.terms {

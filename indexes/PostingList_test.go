@@ -6,7 +6,7 @@ import (
 	"math"
 )
 
-var someFrqcPostingLists = []PostingList {
+var postingLists = []PostingList {
 	PostingList {
 		1: 342,
 		543: 452,
@@ -38,6 +38,32 @@ var expectedTfIdfPostingLists = []PostingList {
 	},
 }
 
+func TestTfIdf(t *testing.T) {
+	for i, postingList := range postingLists {
+		postingList.TfIdf(8)
+		expectedTfIdfPostingList := expectedTfIdfPostingLists[i]
+		if !reflect.DeepEqual(expectedTfIdfPostingList, postingList) {
+			t.Errorf("Posting list %v should be %v after caculating tf-idf score", postingList, expectedTfIdfPostingList)
+		}
+	}
+}
+
+var someFrqcPostingLists = []PostingList {
+	PostingList {
+		1: 342,
+		543: 452,
+		3: 3,
+		76: 45,
+		654: 3,
+	},
+	PostingList {
+		23: 34,
+		1: 544,
+		0: 324,
+		92: 2,
+	},
+}
+
 var expectedMergedPostingList = PostingList {
 	0: 324,
 	1: 544 + 342,
@@ -49,19 +75,10 @@ var expectedMergedPostingList = PostingList {
 	654: 3,
 }
 
-func TestTfIdf(t *testing.T) {
-	for i, postingList := range someFrqcPostingLists {
-		postingList.TfIdf(8)
-		expectedTfIdfPostingList := expectedTfIdfPostingLists[i]
-		if !reflect.DeepEqual(expectedTfIdfPostingList, postingList) {
-			t.Errorf("Posting list %v should be %v after caculating tf-idf score", postingList, expectedTfIdfPostingList)
-		}
-	}
-}
-
 func TestMergeWith(t *testing.T) {
 	postingList := someFrqcPostingLists[0]
-	postingList.MergeWith(someFrqcPostingLists[1])
+	otherPostingList := someFrqcPostingLists[1]
+	postingList.MergeWith(otherPostingList)
 	if !reflect.DeepEqual(postingList, expectedMergedPostingList) {
 		t.Errorf("Merged posting list should be %v, not %v", expectedMergedPostingList, postingList)
 	}

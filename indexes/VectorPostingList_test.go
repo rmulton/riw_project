@@ -47,10 +47,10 @@ var reqVec = map[string]float64 {
 }
 
 var expectedDocAngleScores = map[int]float64 {
-    1: math.Acos((2.5 + 32. + 2.)/(math.Sqrt(math.Pow(2.5, 2.)+math.Pow(32.,2.)+math.Pow(2.,2))+math.Sqrt(3.))),
-	2: math.Acos((3.45)/(math.Sqrt(math.Pow(3.45, 2.))+math.Sqrt(3.))),
-	3: math.Acos((6.934 + 423.34)/(math.Sqrt(math.Pow(6.934, 2.)+math.Pow(423.34, 2.))+math.Sqrt(3.))),
-	342: math.Acos((34.454)/(math.Sqrt(math.Pow(34.454,2.))+math.Sqrt(3.))),
+    1: math.Acos((2.5 + 32. + 2.)/(math.Sqrt(math.Pow(2.5, 2.)+math.Pow(32.,2.)+math.Pow(2.,2))*math.Sqrt(3.))),
+	2: math.Acos((3.45)/(math.Sqrt(math.Pow(3.45, 2.))*math.Sqrt(3.))),
+	3: math.Acos((6.934 + 423.34)/(math.Sqrt(math.Pow(6.934, 2.)+math.Pow(423.34, 2.))*math.Sqrt(3.))),
+	342: math.Acos((34.454)/(math.Sqrt(math.Pow(34.454,2.))*math.Sqrt(3.))),
 } 
 
 func TestMergeToVector(t *testing.T) {
@@ -64,8 +64,10 @@ func TestMergeToVector(t *testing.T) {
 func TestToAngleTo(t *testing.T) {
 	vecPostingList := MergeToVector(somePostingLists)
 	docsAngleScore := vecPostingList.ToAnglesTo(reqVec)
-	if !reflect.DeepEqual(docsAngleScore, expectedDocAngleScores) {
-		t.Errorf("Angles scores should be %v, not %v", expectedDocAngleScores, docsAngleScore)
+	for docID, score := range docsAngleScore {
+		expectedScore := expectedDocAngleScores[docID]
+		if score != expectedScore {
+			t.Errorf("Document %d should have score %f not %f", docID, expectedScore, score)
+		}
 	}
-	
 }
