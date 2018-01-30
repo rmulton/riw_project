@@ -13,7 +13,7 @@ type InMemoryBuilder struct {
 	docCounter int
 }
 
-func NewInMemoryBuilder(readingChannel chan *indexes.Document, routines int, parentWaitGroup *sync.WaitGroup) *InMemoryBuilder {
+func NewInMemoryBuilder(readingChannel indexes.ReadingChannel, routines int, parentWaitGroup *sync.WaitGroup) *InMemoryBuilder {
 	index := indexes.NewEmptyIndex()
 	return &InMemoryBuilder{
 		index: index,
@@ -35,8 +35,8 @@ func (builder *InMemoryBuilder) GetIndex() *indexes.InMemoryIndex {
 
 func (builder *InMemoryBuilder) readDocs() {
 	for doc := range builder.readingChannel {
-		builder.docCounter++
 		builder.addDoc(doc)
+		builder.docCounter++
 	}
 	builder.finish()
 	log.Printf("Done getting %d documents", builder.docCounter)
@@ -48,7 +48,7 @@ func (builder *InMemoryBuilder) finish() {
 
 // Add a document to the current block
 // NB: Might evolve to allow filling several blocks at the same time
-func (builder *InMemoryBuilder) addDoc(doc *indexes.Document) {
+func (builder *InMemoryBuilder) addDoc(doc indexes.Document) {
 
 	// TODO: use routines to parallelize addDocToIndex and addDocToTerm
 

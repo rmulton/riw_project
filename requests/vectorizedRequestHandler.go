@@ -26,12 +26,12 @@ func (reqHandler *vectorizedRequestHandler) request(request string) *indexes.Pos
 	// }
 
 	// Create the vector representing the request
-	reqVector := reqVectorFromTerms(term)	
+	reqVector := reqVectorFromTerms(terms)
 
 	// Compute the angles between the request and the docs
-	postingListForTermsSlice := values(postingListsForTerms)
-	vectorizedPostingList := indexes.MergeToVector(postingListsForTermsSlice)
-	docScores := vectorizedPostingList.ToAngleTo(reqVector)
+	// postingListsForTermsSlice := values(postingListsForTerms)
+	vectorizedPostingList := indexes.MergeToVector(postingListsForTerms)
+	docScores := vectorizedPostingList.ToAnglesTo(reqVector)
 	return &docScores
 }
 
@@ -43,10 +43,10 @@ func reqVectorFromTerms(terms []string) map[string]float64{
 	return reqVector
 }
 
-func values(postingListsForTerms map[string]PostingList) {
-	var postingLists []PostingList
+func values(postingListsForTerms map[string]indexes.PostingList) []indexes.PostingList{
+	var postingLists []indexes.PostingList
 	for _, postingList := range postingListsForTerms {
-		postingLists = append(postingList, postingLists)
+		postingLists = append(postingLists, postingList)
 	}
 	return postingLists
 }

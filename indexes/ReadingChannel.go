@@ -5,4 +5,4 @@ type Document struct {
 	ID int
 	NormalizedTokens []string
 }
-type ReadingChannel chan *Document
+type ReadingChannel chan Document

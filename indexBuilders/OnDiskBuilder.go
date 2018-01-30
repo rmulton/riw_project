@@ -23,9 +23,9 @@ type OnDiskBuilder struct {
 }
 
 
-func NewOnDiskBuilder(bufferSize int, folder string, readingChannel chan *indexes.Document, routines int, parentWaitGroup *sync.WaitGroup) *OnDiskBuilder {
+func NewOnDiskBuilder(bufferSize int, folder string, readingChannel indexes.ReadingChannel, routines int, parentWaitGroup *sync.WaitGroup) *OnDiskBuilder {
 	var waitGroup sync.WaitGroup
-	writingChannel := make(chan *indexes.BufferPostingList)
+	writingChannel := make(indexes.WritingChannel)
 	index := NewBufferIndex(bufferSize, writingChannel)
 	return &OnDiskBuilder{
 		index: index,
@@ -149,7 +149,7 @@ func (builder *OnDiskBuilder) finish() {
 	// Split in folders ? No too long
 	// Keep trace of the list
 	onDiskOnly, inMemoryOnly, onDiskAndInMemory := builder.categorizeTerms()
-	builder.waitGroup.Add(3)
+	builder.waitGroup.Add(4)
 	// Here we try to compute tf-idf scores in memory as much as possible
 	// NB : use workers pool
 	go builder.writeTfIdfInMemoryTerms(inMemoryOnly)
@@ -160,6 +160,7 @@ func (builder *OnDiskBuilder) finish() {
 }
 
 func (builder *OnDiskBuilder) writeDocIDToFilePath(path string) {
+	defer builder.waitGroup.Done()
 	builder.index.writeDocIDToFilePath(path)
 }
 
@@ -196,7 +197,7 @@ func (builder *OnDiskBuilder) fileToTfIdfForTerms(terms map[string]bool) {
 
 // Add a document to the current block
 // NB: Might evolve to allow filling several blocks at the same time
-func (builder *OnDiskBuilder) addDoc(doc *indexes.Document) {
+func (builder *OnDiskBuilder) addDoc(doc indexes.Document) {
 
 	// TODO: use routines to parallelize addDocToIndex and addDocToTerm
 
@@ -212,7 +213,6 @@ func (builder *OnDiskBuilder) addDoc(doc *indexes.Document) {
 func (builder *OnDiskBuilder) writePostingLists() {
 	defer builder.waitGroup.Done()
 	for toWrite := range builder.writingChannel {
-		log.Printf("Writing for term %s", toWrite.Term)
 		// Write it to the disk
 		// TODO : duplicate code with currentPostingListOnDisk()
 		termFile := fmt.Sprintf("./saved/postings/%s", toWrite.Term)

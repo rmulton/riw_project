@@ -14,7 +14,7 @@ type StanfordReader struct {
 	collectionPath string
 	// WaitGroup for main program
 	parentWaitGroup *sync.WaitGroup
-	Docs chan *indexes.Document
+	Docs indexes.ReadingChannel
 	ReadCounter int
 	Mux sync.Mutex
 	sem chan bool
@@ -22,7 +22,7 @@ type StanfordReader struct {
 
 func NewStanfordReader(collectionPath string, routines int, parentWaitGroup *sync.WaitGroup) *StanfordReader {
 	var mux sync.Mutex
-	docs := make(chan *indexes.Document)
+	docs := make(indexes.ReadingChannel)
 	sem := make(chan bool, routines)
 	reader := StanfordReader{
 		collectionPath: collectionPath,
@@ -67,7 +67,7 @@ func (reader *StanfordReader) read(info os.FileInfo, path string) {
 		stringFile := utils.FileToString(path)
 		// Transform it to a list of normalized tokens
 		normalizedTokens := normalizers.Normalize(stringFile, []string{})
-		readDoc := &indexes.Document{
+		readDoc := indexes.Document{
 			ID: counter,
 			Path: path,
 			NormalizedTokens: normalizedTokens,

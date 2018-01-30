@@ -4,12 +4,11 @@ import (
 	"testing"
 	"sync"
 	"reflect"
-	"fmt"
 	"../indexes"
 )
 
 var testInMemWaitGroup sync.WaitGroup
-var testInMemReadingChannel = make(chan *indexes.Document)
+var testInMemReadingChannel = make(chan indexes.Document)
 
 var testInMemSomeDocuments = []indexes.Document {
 	indexes.Document {
@@ -124,28 +123,27 @@ var expectedInMemDocIDToFilePath = map[int]string {
 
 func TestBuildInMemory(t *testing.T) {
 	var builder = NewInMemoryBuilder(testInMemReadingChannel, 2, &testInMemWaitGroup)
+	builder.parentWaitGroup.Add(1)
 	go builder.Build()
 	for _, doc := range testInMemSomeDocuments {
-		builder.readingChannel <- &doc
+		builder.readingChannel <- doc
 	}
 	close(builder.readingChannel)
 	// NB: the tf-idf functionality is tested in ./indexes. Here we rely on it and keep
 	// scores as integers for clarity
+	builder.parentWaitGroup.Wait()
 	for _, postingList := range expectedInMemPostingLists {
 		postingList.TfIdf(5)
 	}
-	builder.parentWaitGroup.Wait()
 	index := builder.GetIndex()
 	// For terms that are in both indexes
 	for term, expectedPostingList := range expectedInMemPostingLists {
 		postingList := index.GetPostingListsForTerms([]string{term})[term]
-		fmt.Printf("%s: %v\n", term ,postingList)
 		if !reflect.DeepEqual(postingList, expectedPostingList) {
 			for docID, expectedScore := range expectedPostingList {
 				score := postingList[docID]
 				if score != expectedScore {
-					//t.Errorf("Score for doc %d for term %s should be %f, not %f", docID, term, expectedScore, score)
-					_ = 1
+					t.Errorf("Score for doc %d for term %s should be %f, not %f", docID, term, expectedScore, score)
 				}
 			}
 		}

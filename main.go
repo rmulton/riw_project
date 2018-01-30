@@ -56,7 +56,7 @@ func main() {
 	index := builder.GetIndex()
 	fmt.Printf("%#v", index.GetPostingListsForTerms([]string{"stanford"}))
 	// index := indexes.OnDiskIndexFromFolder("./saved/")
-	engine := requests.NewEngine(index)
+	engine := requests.NewEngine(index, "binary", "sorted")
 	var req string
 	for {
 		req = readInput()
