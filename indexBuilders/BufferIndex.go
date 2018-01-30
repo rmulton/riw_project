@@ -93,3 +93,7 @@ func (buffer *BufferIndex) toTfIdf(corpusSize int) {
 func (buffer *BufferIndex) writeDocIDToFilePath(path string) {
 	utils.WriteGob(path, buffer.index.GetDocIDToFilePath())
 }
+
+func (buffer *BufferIndex) getPostingListForTerm(term string) indexes.PostingList {
+	return buffer.index.GetPostingListForTerm(term)
+}

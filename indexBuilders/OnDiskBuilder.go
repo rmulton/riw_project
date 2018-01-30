@@ -26,7 +26,7 @@ type OnDiskBuilder struct {
 func NewOnDiskBuilder(bufferSize int, folder string, readingChannel chan *indexes.Document, routines int, parentWaitGroup *sync.WaitGroup) *OnDiskBuilder {
 	var waitGroup sync.WaitGroup
 	writingChannel := make(chan *indexes.BufferPostingList)
-	index := NewBufferIndex(1000000000, writingChannel)
+	index := NewBufferIndex(bufferSize, writingChannel)
 	return &OnDiskBuilder{
 		index: index,
 		bufferSize: bufferSize,
@@ -38,6 +38,8 @@ func NewOnDiskBuilder(bufferSize int, folder string, readingChannel chan *indexe
 	}
 }
 
+// Build method starts one that handle reading the documents from the collection and one
+// routine that handles writing data to the disk
 func (builder *OnDiskBuilder) Build() {
 	defer builder.parentWaitGroup.Done()
 	builder.waitGroup.Add(2)
@@ -84,7 +86,7 @@ func (builder *OnDiskBuilder) mergeDiskMemoryThenTfIdfTerms(toMergeThenTfIdf map
 }
 
 func (builder *OnDiskBuilder) mergeDiskMemoryThenTfIdfTerm(term string) {
-	postingList := builder.index.index.GetPostingList(term)
+	postingList := builder.index.getPostingListForTerm(term)
 	postingListSoFar := builder.currentPostingListOnDisk(term)
 	
 	postingList.MergeWith(postingListSoFar)
@@ -210,7 +212,7 @@ func (builder *OnDiskBuilder) addDoc(doc *indexes.Document) {
 func (builder *OnDiskBuilder) writePostingLists() {
 	defer builder.waitGroup.Done()
 	for toWrite := range builder.writingChannel {
-		// log.Printf("Getting posting list for %s", toWrite.term)
+		log.Printf("Writing for term %s", toWrite.Term)
 		// Write it to the disk
 		// TODO : duplicate code with currentPostingListOnDisk()
 		termFile := fmt.Sprintf("./saved/postings/%s", toWrite.Term)
