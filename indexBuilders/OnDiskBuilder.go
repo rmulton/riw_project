@@ -150,6 +150,7 @@ func (builder *OnDiskBuilder) finish() {
 	// Keep trace of the list
 	onDiskOnly, inMemoryOnly, onDiskAndInMemory := builder.categorizeTerms()
 	builder.waitGroup.Add(4)
+	log.Printf("On disk only: %v\nin memory only: %v\non both: %v\n", onDiskOnly, inMemoryOnly, onDiskAndInMemory)
 	// Here we try to compute tf-idf scores in memory as much as possible
 	// NB : use workers pool
 	go builder.writeTfIdfInMemoryTerms(inMemoryOnly)
