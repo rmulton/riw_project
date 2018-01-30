@@ -6,6 +6,9 @@ import (
 // TODO : Should we move elsewhere the following functions ?
 // TODO : Should we juste have a function ToAngleScoresTo([]postingLists, request) ??
 
+// VectorPostingList is a docID -> (term -> score) map
+type VectorPostingList map[int]map[string]float64
+
 // MergeToVector merges two posting lists to a vectorized posting list.
 // For an input of this kind :
 // [

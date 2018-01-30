@@ -7,8 +7,6 @@ import (
 
 // PostingList is a docID -> score map
 type PostingList map[int]float64
-// VectorPostingList is a docID -> (term -> score) map
-type VectorPostingList map[int]map[string]float64
 
 func PostingListFromFile(path string) (error, PostingList) {
 	postingList := make(PostingList)
