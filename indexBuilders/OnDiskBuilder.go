@@ -3,6 +3,7 @@ package indexBuilders
 import (
 	"sync"
 	"fmt"
+	"time"
 	"os"
 	"log"
 	"path/filepath"
@@ -148,6 +149,7 @@ func (builder *OnDiskBuilder) finish() {
 	// Compute the intersection
 	// Split in folders ? No too long
 	// Keep trace of the list
+	time.Sleep(1000*time.Millisecond)
 	onDiskOnly, inMemoryOnly, onDiskAndInMemory := builder.categorizeTerms()
 	builder.waitGroup.Add(4)
 	log.Printf("On disk only: %v\nin memory only: %v\non both: %v\n", onDiskOnly, inMemoryOnly, onDiskAndInMemory)
