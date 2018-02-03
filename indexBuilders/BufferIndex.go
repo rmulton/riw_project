@@ -4,7 +4,7 @@ import (
 	"../indexes"
 	"../utils"
 	"sync"
-	"log"
+	// "log"
 )
 
 type BufferIndex struct {
@@ -65,29 +65,51 @@ func (buffer *BufferIndex) writeBiggestPostingList() {
 
 	// log.Printf("Writing posting list for %s", termWithLongestPostingList)
 	// go longestPostingList.appendToTermFile(termWithLongestPostingList, index.writingChannel)
-	buffer.appendToTermFile(longestPostingList, termWithLongestPostingList)
+	// log.Printf("Appending to term file from writeBiggestPostingList term %s", termWithLongestPostingList)
+	buffer.appendToTermFile(longestPostingList, termWithLongestPostingList, false)
 }
 
 // TODO : avoid code repition by building buffer.appendPostingListOnDisk(term)
 
 // Should be done by the buffer index instead
-func (buffer *BufferIndex) appendToTermFile(postingList indexes.PostingList, term string) {
-	buffer.writingChannel <- indexes.NewBufferPostingList(term, postingList)
+func (buffer *BufferIndex) appendToTermFile(postingList indexes.PostingList, term string, replace bool) {
+	// Here is the problem: the score is added to the file instead of replacing it
+	// TODO: Clean the mechanics that's below
+	var bufferPostingList indexes.BufferPostingList
+	if replace {
+		bufferPostingList = indexes.NewReplacingBufferPostingList(term, postingList)
+	} else {
+		bufferPostingList = indexes.NewBufferPostingList(term, postingList)
+	}
+	buffer.writingChannel <- bufferPostingList
+}
+
+func (buffer *BufferIndex) writePostingListForTerms(terms map[string]bool) {
+	for term, _ := range terms {
+		postingList := buffer.index.GetPostingListForTerm(term)
+		buffer.appendToTermFile(postingList, term, false)
+	}
 }
 
 // When no more documents are to be read
+// Used only for InMemoryBuilder
 func (buffer *BufferIndex) writeAllPostingLists() {
 	defer close(buffer.writingChannel)
-	log.Printf("Writing remaining posting lists")
+	// log.Printf("Writing remaining posting lists")
 	for term, postingList := range buffer.index.GetPostingLists() {
 		// fmt.Printf("Writing posting list for %s", term)
-		buffer.appendToTermFile(postingList, term)
+		// log.Printf("Appending to term file from writeAllPostingList term %s", term)
+		buffer.appendToTermFile(postingList, term, true)
 		// go postingList.appendToTermFile(term, index.writingChannel)
 	}
 }
 
 func (buffer *BufferIndex) toTfIdf(corpusSize int) {
 	buffer.index.ToTfIdf(corpusSize)
+}
+
+func (buffer *BufferIndex) toTfIdfTerms(corpusSize int, terms map[string]bool) {
+	buffer.index.ToTfIdfTerms(corpusSize, terms)
 }
 
 func (buffer *BufferIndex) writeDocIDToFilePath(path string) {

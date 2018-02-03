@@ -133,7 +133,7 @@ func TestBuildInMemory(t *testing.T) {
 	// scores as integers for clarity
 	builder.parentWaitGroup.Wait()
 	for _, postingList := range expectedInMemPostingLists {
-		postingList.TfIdf(5)
+		postingList.TfIdf(len(someDocuments))
 	}
 	index := builder.GetIndex()
 	// For terms that are in both indexes

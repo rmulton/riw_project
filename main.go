@@ -9,7 +9,7 @@ import (
 	"bufio"
 	"os"
 	"fmt"
-	// "./indexes"
+	"./indexes"
 	"./requests"
 )
 
@@ -23,28 +23,28 @@ func readInput() string {
 func main() {
 	start := time.Now()
 	var waitGroup sync.WaitGroup
-	// reader := readers.NewStanfordReader(
-	// 	"../consignes/Data/CS276/pa1-data/",
-	// 	10,
-	// 	&waitGroup,
-	// )
-	reader := readers.NewCACMReader(
-		"../consignes/Data/cacm/",
-		5,
+	reader := readers.NewStanfordReader(
+		"../consignes/Data/CS276/pa1-data/",
+		10,
 		&waitGroup,
 	)
-	builder := indexBuilders.NewInMemoryBuilder(
+	// reader := readers.NewCACMReader(
+		// "../consignes/Data/cacm/",
+		// 5,
+		// &waitGroup,
+	// )
+	// builder := indexBuilders.NewInMemoryBuilder(
+		// reader.Docs,
+		// 10,
+		// &waitGroup,
+	// )
+	builder := indexBuilders.NewOnDiskBuilder(
+		1000000000,
+		"./saved",
 		reader.Docs,
 		10,
 		&waitGroup,
 	)
-	// builder := indexBuilders.NewOnDiskBuilder(
-	// 	1000000000,
-	// 	"./saved",
-	// 	reader.Docs,
-	// 	10,
-	// 	&waitGroup,
-	// )
 	log.Println("Starting")
 	waitGroup.Add(2)
 	go reader.Read()
@@ -53,9 +53,8 @@ func main() {
 	done := time.Now()
 	elapsed := done.Sub(start)
 	log.Printf("Done in %v", elapsed)
-	index := builder.GetIndex()
-	fmt.Printf("%#v", index.GetPostingListsForTerms([]string{"stanford"}))
-	// index := indexes.OnDiskIndexFromFolder("./saved/")
+	// index := builder.GetIndex()
+	index := indexes.OnDiskIndexFromFolder("./saved/")
 	engine := requests.NewEngine(index, "binary", "sorted")
 	var req string
 	for {

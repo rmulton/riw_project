@@ -65,6 +65,51 @@ var someDocuments = []indexes.Document {
 			"toto",
 		},
 	},
+	indexes.Document {
+		ID: 3674,
+		Path: "djdsl",
+		NormalizedTokens: []string {
+
+			"aaa",
+			"aaa",
+			"aaa",
+			"aaa",
+			"aaa",
+
+			"blabla",
+			"blabla",
+			"blabla",
+			"blabla",
+			"blabla",
+			"blabla",
+			"blabla",
+			"blabla",
+			"blabla",
+			"blabla",
+			"blabla",
+			"blabla",
+
+			"bleble",
+			"bleble",
+
+			"bebebe",
+			"bebebe",
+			"bebebe",
+			"bebebe",
+			"bebebe",
+			"bebebe",
+
+			"toto",
+			"toto",
+			"toto",
+			"toto",
+			"toto",
+			"toto",
+			"toto",
+			"toto",
+			"toto",
+		},
+	},
 }
 
 var expectedPostingLists = map[string]indexes.PostingList {
@@ -72,10 +117,12 @@ var expectedPostingLists = map[string]indexes.PostingList {
 		0: 1,
 		12: 2,
 		27: 1,
+		3674: 12,
 	},
 	"bleble": indexes.PostingList {
 		0: 1,
 		64: 1,
+		3674: 2,
 	},
 	"blublu": indexes.PostingList {
 		0: 1,
@@ -83,6 +130,7 @@ var expectedPostingLists = map[string]indexes.PostingList {
 	"aaa": indexes.PostingList {
 		12: 1,
 		64: 3,
+		3674: 5,
 	},
 	"bbb": indexes.PostingList {
 		12: 1,
@@ -107,9 +155,11 @@ var expectedPostingLists = map[string]indexes.PostingList {
 	},
 	"bebebe": indexes.PostingList {
 		324: 1,
+		3674: 6,
 	},
 	"toto": indexes.PostingList {
 		324: 2,
+		3674: 9,
 	},
 }
 
@@ -119,6 +169,7 @@ var expectedDocIDToFilePath = map[int]string {
 	64: "sdlkajfsdflkdfjd",
 	27: "dlfkdsl",
 	324: "dflkjdsl",
+	3674: "djdsl",
 }
 
 func TestBuildOnDisk(t *testing.T) {
@@ -133,13 +184,14 @@ func TestBuildOnDisk(t *testing.T) {
 	// NB: the tf-idf functionality is tested in ./indexes. Here we rely on it and keep
 	// scores as integers for clarity
 	for _, postingList := range expectedPostingLists {
-		postingList.TfIdf(5)
+		postingList.TfIdf(len(someDocuments))
 	}
 	index := builder.GetIndex()
 	// For terms that are in both indexes
 	for term, expectedPostingList := range expectedPostingLists {
 		postingList := index.GetPostingListsForTerms([]string{term})[term]
 		if !reflect.DeepEqual(postingList, expectedPostingList) {
+			// t.Errorf("\nFor %s:\n   - Should be %v\n   - Not %v\n", term, expectedPostingList, postingList)
 			for docID, expectedScore := range expectedPostingList {
 				score := postingList[docID]
 				if score != expectedScore {

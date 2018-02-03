@@ -1,9 +1,9 @@
 package indexBuilders
 
+// TODO: Add folders handler
 import (
 	"sync"
 	"fmt"
-	"time"
 	"os"
 	"log"
 	"path/filepath"
@@ -65,21 +65,21 @@ func (builder *OnDiskBuilder) readDocs() {
 	log.Printf("Done getting %d documents", builder.docCounter)
 }
 
-func (builder *OnDiskBuilder) writeTfIdfInMemoryTerms(inMemoryTerms map[string]bool) {
-	defer builder.waitGroup.Done()
-	// TODO: worker pool
-	builder.index.toTfIdf(builder.docCounter)
-	builder.index.writeAllPostingLists()
+func (builder *OnDiskBuilder) writeTfIdfInMemoryTerms(inMemoryTerms map[string]bool, waitGroup *sync.WaitGroup) {
 
+	defer waitGroup.Done()
+	// TODO: worker pool
+	builder.index.toTfIdfTerms(builder.docCounter, inMemoryTerms)
+	builder.index.writePostingListForTerms(inMemoryTerms)
 }
 
-func (builder *OnDiskBuilder) tfIdfOnDiskTerms(onDiskTerms map[string]bool) {
-	defer builder.waitGroup.Done()
+func (builder *OnDiskBuilder) tfIdfOnDiskTerms(onDiskTerms map[string]bool, waitGroup *sync.WaitGroup) {
+	defer waitGroup.Done()
 	builder.fileToTfIdfForTerms(onDiskTerms)
 }
 
-func (builder *OnDiskBuilder) mergeDiskMemoryThenTfIdfTerms(toMergeThenTfIdf map[string]bool) {
-	defer builder.waitGroup.Done()
+func (builder *OnDiskBuilder) mergeDiskMemoryThenTfIdfTerms(toMergeThenTfIdf map[string]bool, waitGroup *sync.WaitGroup) {
+	defer waitGroup.Done()
 	for term, _ := range toMergeThenTfIdf {
 		// worker pool
 		builder.mergeDiskMemoryThenTfIdfTerm(term)
@@ -90,9 +90,15 @@ func (builder *OnDiskBuilder) mergeDiskMemoryThenTfIdfTerm(term string) {
 	postingList := builder.index.getPostingListForTerm(term)
 	postingListSoFar := builder.currentPostingListOnDisk(term)
 	
+	// Here it is faster to load the persisted scores then get to tf-idf score rather than
+	// appending the score in memory to the file then use the functionnality to tf-idf a file
+	// even though it would use existing functionnalities. Maybe it would be wise to have a
+	// Finisher struct that handle finishing indexes and a Writer that handles writing for the
+	// next version.
 	postingList.MergeWith(postingListSoFar)
 	postingList.TfIdf(builder.docCounter)
-	builder.index.appendToTermFile(postingList, term)
+	// log.Printf("Appending to term file from mergeDiskMemoryThenTfIdfTerm %s", term)
+	builder.index.appendToTermFile(postingList, term, true)
 }
 
 
@@ -141,6 +147,7 @@ func (builder *OnDiskBuilder) categorizeTerms() (map[string]bool, map[string]boo
 	onDiskTerms := builder.getOnDiskTerms()
 	inMemoryTerms := builder.getInMemoryTerms()
 	onDiskOnly, inMemoryOnly, onDiskAndInMemory := separate(onDiskTerms, inMemoryTerms)
+	log.Printf("onDiskOnly: %v\ninMem: %v\nonDiskAndInMem: %v", onDiskOnly, inMemoryOnly, onDiskAndInMemory)
 	return onDiskOnly, inMemoryOnly, onDiskAndInMemory
 }
 func (builder *OnDiskBuilder) finish() {
@@ -149,21 +156,26 @@ func (builder *OnDiskBuilder) finish() {
 	// Compute the intersection
 	// Split in folders ? No too long
 	// Keep trace of the list
-	time.Sleep(1000*time.Millisecond)
+	// for term, _ := range builder.index.index.GetPostingLists() {
+		// log.Printf("Still in memory before finishing the index: %s", term)
+	// }
 	onDiskOnly, inMemoryOnly, onDiskAndInMemory := builder.categorizeTerms()
-	builder.waitGroup.Add(4)
-	log.Printf("On disk only: %v\nin memory only: %v\non both: %v\n", onDiskOnly, inMemoryOnly, onDiskAndInMemory)
+	var wg sync.WaitGroup
+	wg.Add(4)
+	// log.Printf("On disk only: %v\nin memory only: %v\non both: %v\n", onDiskOnly, inMemoryOnly, onDiskAndInMemory)
 	// Here we try to compute tf-idf scores in memory as much as possible
 	// NB : use workers pool
-	go builder.writeTfIdfInMemoryTerms(inMemoryOnly)
+	go builder.writeTfIdfInMemoryTerms(inMemoryOnly, &wg)
 	// NB : use workers pool and walk for this one
-	go builder.tfIdfOnDiskTerms(onDiskOnly)
-	go builder.mergeDiskMemoryThenTfIdfTerms(onDiskAndInMemory)
-	go builder.writeDocIDToFilePath("./saved/meta/idToPath")
+	go builder.tfIdfOnDiskTerms(onDiskOnly, &wg)
+	go builder.mergeDiskMemoryThenTfIdfTerms(onDiskAndInMemory, &wg)
+	go builder.writeDocIDToFilePath("./saved/meta/idToPath", &wg)
+	wg.Wait()
+	close(builder.writingChannel)
 }
 
-func (builder *OnDiskBuilder) writeDocIDToFilePath(path string) {
-	defer builder.waitGroup.Done()
+func (builder *OnDiskBuilder) writeDocIDToFilePath(path string, waitGroup *sync.WaitGroup) {
+	defer waitGroup.Done()
 	builder.index.writeDocIDToFilePath(path)
 }
 
@@ -216,15 +228,24 @@ func (builder *OnDiskBuilder) addDoc(doc indexes.Document) {
 func (builder *OnDiskBuilder) writePostingLists() {
 	defer builder.waitGroup.Done()
 	for toWrite := range builder.writingChannel {
+		// log.Printf("Writing on disk for term %s", toWrite.Term)
 		// Write it to the disk
 		// TODO : duplicate code with currentPostingListOnDisk()
 		termFile := fmt.Sprintf("./saved/postings/%s", toWrite.Term)
-		// If the file exists append it
+		// If the file exists, either append it or replace it according to ReplaceCurrentFile field
+		// from toWrite
 		if _, err := os.Stat(termFile); err == nil {
-			postingListSoFar := builder.currentPostingListOnDisk(toWrite.Term)
+			postingListSoFar := make(indexes.PostingList)
+			// If the field is false, it means that the current posting list persisted should be merged
+			// with the new posting list sent to the writingChannel
+			if toWrite.ReplaceCurrentFile {
+				postingListSoFar = toWrite.PostingList
+			} else {
+				postingListSoFar = builder.currentPostingListOnDisk(toWrite.Term)
+				// Merge the current posting list
+				postingListSoFar.MergeWith(toWrite.PostingList)
+			}
 			
-			// Merge the current posting list
-			postingListSoFar.MergeWith(toWrite.PostingList)
 			// Write it to file
 			utils.WriteGob(termFile, postingListSoFar)
 		// Otherwise create it

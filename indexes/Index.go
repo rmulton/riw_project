@@ -52,6 +52,13 @@ func (index *Index) ToTfIdf(corpusSize int) {
 	}
 }
 
+func (index *Index) ToTfIdfTerms(corpusSize int, terms map[string]bool) {
+	// TODO: Parallelize
+	for term, _ := range terms {
+		index.postingLists[term].TfIdf(corpusSize)
+	}
+}
+
 // NB: In some cases, it might be usefull to merge AddDocToTerm and AddDocToIndex.
 // However, we chose not to because of the on disk index use case. Indeed, the document counter
 // shouldn't be held by the index but by the buffer index.
