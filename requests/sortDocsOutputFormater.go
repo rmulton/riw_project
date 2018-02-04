@@ -18,6 +18,7 @@ type scoresToDocs map[float64][]int
 func NewSortDocsOutputFormater(documentsFolder string) *sortDocsOutputFormater {
 	docIDToPath := make(map[int]string)
 	utils.ReadGob(documentsFolder+"/meta/idToPath", &docIDToPath) // TODO: change to use a random filepath in the index
+	fmt.Printf("DocID to path: %#v", docIDToPath)
 	return &sortDocsOutputFormater{
 		documentsFolder: documentsFolder,
 		docIDToPath: docIDToPath,
