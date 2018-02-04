@@ -2,6 +2,7 @@ package utils
 
 import (
 	"io/ioutil"
+	"log"
 	"os"
 	"encoding/gob"
 )
@@ -10,7 +11,7 @@ import (
 func FileToString(filePath string) string {
 	dat, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Error \"%v\" while trying to read \"%s\"", err, filePath)
 	}
 	fileString := string(dat)
 	return fileString
@@ -18,20 +19,32 @@ func FileToString(filePath string) string {
 
 func WriteGob(filePath string, object interface{}) error {
 	file, err := os.Create(filePath)
-	if err == nil {
-		encoder := gob.NewEncoder(file)
-		encoder.Encode(object)
+	if err!=nil {
+		log.Printf("Error trying to create \"%s\": %v", filePath, err)
+		return err
+	}
+	encoder := gob.NewEncoder(file)
+	encErr := encoder.Encode(object)
+	if encErr!=nil {
+		log.Printf("Error trying to encode \"%s\": %v", filePath, encErr)
+		return encErr
 	}
 	file.Close()
-	return err
+	return nil
 }
 
 func ReadGob(filePath string, object interface{}) error {
 	file, err := os.Open(filePath)
-	if err == nil {
-		decoder := gob.NewDecoder(file)
-		err = decoder.Decode(object)
+	if err != nil {
+		log.Printf("Error trying to read %s: %v", filePath, err)
+		return err
+	}
+	decoder := gob.NewDecoder(file)
+	decErr := decoder.Decode(object)
+	if decErr != nil {
+		log.Printf("Error trying to decode %s, %v", filePath, decErr)
+		return decErr
 	}
 	file.Close()
-	return err
+	return nil
 }
