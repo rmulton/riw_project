@@ -147,7 +147,6 @@ func (builder *OnDiskBuilder) categorizeTerms() (map[string]bool, map[string]boo
 	onDiskTerms := builder.getOnDiskTerms()
 	inMemoryTerms := builder.getInMemoryTerms()
 	onDiskOnly, inMemoryOnly, onDiskAndInMemory := separate(onDiskTerms, inMemoryTerms)
-	log.Printf("onDiskOnly: %v\ninMem: %v\nonDiskAndInMem: %v", onDiskOnly, inMemoryOnly, onDiskAndInMemory)
 	return onDiskOnly, inMemoryOnly, onDiskAndInMemory
 }
 func (builder *OnDiskBuilder) finish() {
@@ -161,7 +160,7 @@ func (builder *OnDiskBuilder) finish() {
 	// }
 	onDiskOnly, inMemoryOnly, onDiskAndInMemory := builder.categorizeTerms()
 	var wg sync.WaitGroup
-	wg.Add(4)
+	wg.Add(3)
 	// log.Printf("On disk only: %v\nin memory only: %v\non both: %v\n", onDiskOnly, inMemoryOnly, onDiskAndInMemory)
 	// Here we try to compute tf-idf scores in memory as much as possible
 	// NB : use workers pool
@@ -169,13 +168,12 @@ func (builder *OnDiskBuilder) finish() {
 	// NB : use workers pool and walk for this one
 	go builder.tfIdfOnDiskTerms(onDiskOnly, &wg)
 	go builder.mergeDiskMemoryThenTfIdfTerms(onDiskAndInMemory, &wg)
-	go builder.writeDocIDToFilePath("./saved/meta/idToPath", &wg)
+	go builder.writeDocIDToFilePath("./saved/meta/idToPath")
 	wg.Wait()
 	close(builder.writingChannel)
 }
 
-func (builder *OnDiskBuilder) writeDocIDToFilePath(path string, waitGroup *sync.WaitGroup) {
-	defer waitGroup.Done()
+func (builder *OnDiskBuilder) writeDocIDToFilePath(path string) {
 	builder.index.writeDocIDToFilePath(path)
 }
 
@@ -259,7 +257,7 @@ func (builder *OnDiskBuilder) currentPostingListOnDisk(term string) indexes.Post
 	termFile := fmt.Sprintf("./saved/postings/%s", term)
 	err, postingListSoFar := indexes.PostingListFromFile(termFile)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	return postingListSoFar
 }

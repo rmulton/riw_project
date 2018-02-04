@@ -23,7 +23,8 @@ func NewEngine(index indexes.RequestableIndex, requestType string, outputType st
 	var outputFormater outputFormater
 	switch outputType {
 	case "sorted":
-		outputFormater = NewSortDocsOutputFormater("../consignes/Data/CACM/")
+		// TODO: get saved folder path in argument or config
+		outputFormater = NewSortDocsOutputFormater("./saved")
 	case "dumb":
 		outputFormater = NewDumbOutputFormater()
 	}

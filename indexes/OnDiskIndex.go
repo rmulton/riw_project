@@ -14,9 +14,9 @@ type OnDiskIndex struct {
 
 func OnDiskIndexFromFolder(folderPath string) *OnDiskIndex {
 	docIDToFilePath := make(map[int]string)
-	err := utils.ReadGob("./saved/meta/iDToPath", &docIDToFilePath)
+	err := utils.ReadGob("./saved/meta/idToPath", &docIDToFilePath)
 	if err != nil {
-		log.Printf("Error while building the index from on disk files: %v", err)
+		log.Fatal("Error while building the index from on disk files: %v", err)
 	}
 	postingLists := make(map[string]PostingList)
 	index := &Index{
