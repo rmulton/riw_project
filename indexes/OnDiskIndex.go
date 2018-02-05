@@ -16,7 +16,7 @@ func OnDiskIndexFromFolder(folderPath string) *OnDiskIndex {
 	docIDToFilePath := make(map[int]string)
 	err := utils.ReadGob("./saved/meta/idToPath", &docIDToFilePath)
 	if err != nil {
-		log.Fatal("Error while building the index from on disk files: %v", err)
+		log.Println("Error while building the index from on disk files: %v", err)
 	}
 	postingLists := make(map[string]PostingList)
 	index := &Index{
@@ -69,4 +69,8 @@ func (odi *OnDiskIndex) LoadTerms(terms []string) error {
 		}
 	}
 	return nil
+}
+
+func (index *OnDiskIndex) GetDocIDToPath() map[int]string {
+	return index.index.docIDToFilePath
 }

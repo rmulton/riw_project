@@ -20,9 +20,8 @@ type StanfordReader struct {
 	sem chan bool
 }
 
-func NewStanfordReader(collectionPath string, routines int, parentWaitGroup *sync.WaitGroup) *StanfordReader {
+func NewStanfordReader(docs indexes.ReadingChannel, collectionPath string, routines int, parentWaitGroup *sync.WaitGroup) *StanfordReader {
 	var mux sync.Mutex
-	docs := make(indexes.ReadingChannel)
 	sem := make(chan bool, routines)
 	reader := StanfordReader{
 		collectionPath: collectionPath,

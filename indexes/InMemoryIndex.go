@@ -2,6 +2,7 @@ package indexes
 
 import (
 	"../utils"
+	"log"
 )
 type InMemoryIndex struct {
 	index *Index
@@ -15,7 +16,7 @@ func InMemoryIndexFromFile(filePath string) *InMemoryIndex {
 	index := NewEmptyIndex()
 	err := utils.ReadGob("./saved/index.gob", &index)
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
 	return &InMemoryIndex{
 		index: index,
@@ -28,4 +29,8 @@ func (index *InMemoryIndex) GetPostingListsForTerms(terms []string) map[string]P
 		postingListsForTerms[term] = index.index.postingLists[term]
 	}
 	return postingListsForTerms
+}
+
+func (index *InMemoryIndex) GetDocIDToPath() map[int]string {
+	return index.index.docIDToFilePath
 }

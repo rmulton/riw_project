@@ -9,18 +9,13 @@ import (
 )
 
 type sortDocsOutputFormater struct {
-	documentsFolder string
 	docIDToPath map[int]string
 }
 
 type scoresToDocs map[float64][]int
 
-func NewSortDocsOutputFormater(documentsFolder string) *sortDocsOutputFormater {
-	docIDToPath := make(map[int]string)
-	utils.ReadGob(documentsFolder+"/meta/idToPath", &docIDToPath) // TODO: change to use a random filepath in the index
-	fmt.Printf("DocID to path: %#v", docIDToPath)
+func NewSortDocsOutputFormater(docIDToPath map[int]string) *sortDocsOutputFormater {
 	return &sortDocsOutputFormater{
-		documentsFolder: documentsFolder,
 		docIDToPath: docIDToPath,
 	}
 }
@@ -34,13 +29,15 @@ func (fmter *sortDocsOutputFormater) output(res *indexes.PostingList) {
 				rank++
 				// TODO: move to vectorized requests
 				normalizedScore := score/math.Acos(0)*100
-				if rank <= 20 {
+				if rank <= 3 {
 					docPath := fmter.docIDToPath[docID]
 					content := utils.FileToString(docPath)
 					if len(content) > 400{
 						content = content[:400]
-					} else {
+					} else if len(content) > 0 {
 						content = content[:len(content)-1]
+					} else {
+						content = "" // TODO: implement for collections for wich documents are mixed up in a file (like cacm)
 					}
 					fmt.Printf("> %d | Doc %d | Score %f%%\n%s ...\n%s\n\n", rank, docID, normalizedScore, content, docPath)
 				}

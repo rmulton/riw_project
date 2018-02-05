@@ -23,9 +23,8 @@ type CACMReader struct {
 	stopList []string
 }
 
-func NewCACMReader(collectionPath string, routines int, parentWaitGroup *sync.WaitGroup) *CACMReader {
+func NewCACMReader(docs indexes.ReadingChannel, collectionPath string, routines int, parentWaitGroup *sync.WaitGroup) *CACMReader {
 	var mux sync.Mutex
-	docs := make(indexes.ReadingChannel)
 	sem := make(chan bool, routines)
 	// Stop list
 	stopListFile := utils.FileToString(collectionPath + "/common_words")

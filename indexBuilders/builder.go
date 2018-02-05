@@ -6,5 +6,5 @@ import (
 
 type IndexBuilder interface {
 	Build()
-	GetIndex() *indexes.Index
+	GetIndex() indexes.RequestableIndex
 }

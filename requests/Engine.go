@@ -23,8 +23,7 @@ func NewEngine(index indexes.RequestableIndex, requestType string, outputType st
 	var outputFormater outputFormater
 	switch outputType {
 	case "sorted":
-		// TODO: get saved folder path in argument or config
-		outputFormater = NewSortDocsOutputFormater("./saved")
+		outputFormater = NewSortDocsOutputFormater(index.GetDocIDToPath())
 	case "dumb":
 		outputFormater = NewDumbOutputFormater()
 	}

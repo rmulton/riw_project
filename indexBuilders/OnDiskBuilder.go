@@ -50,7 +50,7 @@ func (builder *OnDiskBuilder) Build() {
 	log.Printf("Done filling with %d documents", builder.docCounter)
 }
  
-func (builder *OnDiskBuilder) GetIndex() *indexes.OnDiskIndex {
+func (builder *OnDiskBuilder) GetIndex() indexes.RequestableIndex {
 	return indexes.OnDiskIndexFromFolder("./saved/")
 }
 
@@ -106,7 +106,7 @@ func (builder *OnDiskBuilder) getOnDiskTerms() map[string]bool {
 	onDiskTerms := make(map[string]bool)
 	files, err := ioutil.ReadDir("./saved/postings/")
     if err != nil {
-        log.Fatal(err)
+        log.Println(err)
     }
 
     for _, f := range files {

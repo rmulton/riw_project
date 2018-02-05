@@ -28,7 +28,7 @@ func (builder *InMemoryBuilder) Build() {
 	log.Printf("Done filling with %d documents", builder.docCounter)
 }
 
-func (builder *InMemoryBuilder) GetIndex() *indexes.InMemoryIndex {
+func (builder *InMemoryBuilder) GetIndex() indexes.RequestableIndex {
 	// TODO : Add cached version
 	return indexes.InMemoryIndexFromIndex(builder.index)
 }
