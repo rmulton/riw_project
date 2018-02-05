@@ -1,10 +1,12 @@
 package indexBuilders
 
 import (
+	"os"
 	"testing"
 	"sync"
 	"reflect"
 	"../indexes"
+	"../utils"
 )
 
 var onDiskWaitGroup sync.WaitGroup
@@ -173,7 +175,8 @@ var expectedDocIDToFilePath = map[int]string {
 }
 
 func TestBuildOnDisk(t *testing.T) {
-	var builder = NewOnDiskBuilder(3, "./saved/tests/", onDiskReadingChannel, 2, &onDiskWaitGroup)
+	utils.ClearOrCreatePersistedIndex("./saved")
+	var builder = NewOnDiskBuilder(3, "./saved", onDiskReadingChannel, 2, &onDiskWaitGroup)
 	builder.parentWaitGroup.Add(1)
 	go builder.Build()
 	for _, doc := range someDocuments {
@@ -200,4 +203,6 @@ func TestBuildOnDisk(t *testing.T) {
 			}
 		}
 	}
+	// Clear the folder after
+	os.RemoveAll("./saved")
 }
