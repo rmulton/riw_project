@@ -38,3 +38,18 @@ func CheckPathExists(path string) bool {
 	}
 	return true
 }
+
+// ClearPersistedIndex clears a persisted index as structured in this project:
+// ./saved/postings/ and ./saved/meta/
+func ClearOrCreatePersistedIndex(indexPath string) {
+	fmt.Println("Clearing the previous index saved on the disk")
+	ClearFolder(indexPath)
+	err := os.MkdirAll(fmt.Sprintf("%s/postings", indexPath), 0666)
+	if err!=nil{
+		fmt.Println(err)
+	}
+	err = os.MkdirAll(fmt.Sprintf("%s/meta", indexPath), 0666)
+	if err!=nil{
+		fmt.Println(err)
+	}
+}

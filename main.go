@@ -15,19 +15,6 @@ import (
 	"./utils"
 )
 
-func clearPersistedIndex() {
-	fmt.Println("Clearing the previous index saved on the disk")
-	utils.ClearFolder("./saved")
-	err := os.MkdirAll("./saved/postings/", 0666)
-	if err!=nil{
-		fmt.Println(err)
-	}
-	err = os.MkdirAll("./saved/meta/", 0666)
-	if err!=nil{
-		fmt.Println(err)
-	}
-}
-
 func readInput(helpMessage string) string {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print(helpMessage)
@@ -50,7 +37,7 @@ func buildIndex(dataFolder string, collection string, inMemoryIndex bool) indexe
 	dataFolderDoesNotExistsMsg := fmt.Sprintf("The data folder %s does not exist.\n>> Please input an existing folder: ", dataFolder)
 	dataFolder = checkFolderExistsOrAskForAnother(dataFolder, dataFolderDoesNotExistsMsg)
 	// Erase the folder "./saved" or create it
-	clearPersistedIndex()
+	utils.ClearOrCreatePersistedIndex("./saved")
 	// Create the reader
 	var waitGroup sync.WaitGroup
 	var reader readers.Reader
@@ -154,7 +141,7 @@ func main() {
 	var index indexes.RequestableIndex
 	// If the from scratch option is set to true, erase everything in "./saved/meta" and "./saved/postings"
 	if fromScratch && dataFolder==""{
-		clearPersistedIndex()
+		utils.ClearOrCreatePersistedIndex("./saved")
 	}
 	// If no dataFolder is given as a flag, try loading the index from "./saved"
 	if dataFolder=="" {
