@@ -10,7 +10,7 @@ func Normalize(paragraph string, stopwords []string) []string {
 	// tokens := strings.FieldsFunc(paragraph, func(r rune) bool {
 		// return r == ' ' || r == '.' || r == '\n' || r == ',' || r == '?' || r == '!' || r == '(' || r == ')' || r == '*' || r == ';' || r == '"' || r == '\'' || r == ':' || r == '{' || r == '}' || r == '/' || r == '|'
 	// })
-	wordRegex := regexp.MustCompile("[A-z0-9\\-\\_]*")
+	wordRegex := regexp.MustCompile("[A-z0-9\\-\\_\\.]*")
 	tokens := wordRegex.FindAllString(paragraph, -1)
 
 	return normalizeWords(tokens, stopwords)
