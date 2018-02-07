@@ -14,9 +14,9 @@ type testParagraph struct {
 
 var testParagraphs = []testParagraph{
 	testParagraph{
-		"horse  tree accordingly",
+		"horse  tree accordingly HoRse 36-BiT",
 		[]string{"accordingly"},
-		[]string{"hors", "tree"},
+		[]string{"hors", "tree", "hors", "36-bit"},
 	},
 }
 
