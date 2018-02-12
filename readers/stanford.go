@@ -18,11 +18,95 @@ type StanfordReader struct {
 	ReadCounter int
 	Mux sync.Mutex
 	sem chan bool
+	stopwords []string
 }
 
 func NewStanfordReader(docs indexes.ReadingChannel, collectionPath string, routines int, parentWaitGroup *sync.WaitGroup) *StanfordReader {
 	var mux sync.Mutex
 	sem := make(chan bool, routines)
+	stopwords := []string{
+		"of",
+		"the",
+		"and",
+		"to",
+		"in",
+		"for",
+		"a",
+		"on",
+		"by",
+		"this",
+		"at",
+		"is",
+		"with",
+		"s",
+		"about",
+		"from",
+		"are",
+		"us",
+		"all",
+		"be",
+		"that",
+		"it",
+		"as",
+		"or",
+		"an",
+		"you",
+		"i",
+		"your",
+		"can",
+		"will",
+		"we",
+		"how",
+		"what",
+		"where",
+		"has",
+		"have",
+		"which",
+		"if",
+		"not",
+		"e",
+		"may",
+		"our",
+		"no",
+		"here",
+		"their",
+		"do",
+		"who",
+		"it",
+		"been",
+		"but",
+		"when",
+		"some",
+		"they",
+		"there",
+		"through",
+		"take",
+		"into",
+		"well",
+		"he",
+		"she",
+		"him",
+		"her",
+		"my",
+		"such",
+		"off",
+		"then",
+		"his",
+		"via",
+		"so",
+		"am",
+		"would",
+		"without",
+		"everything",
+		"them",
+		"were",
+		"per",
+		"be",
+		"her",
+		"which",
+		"me",
+		"much",
+	}
 	reader := StanfordReader{
 		collectionPath: collectionPath,
 		parentWaitGroup: parentWaitGroup,
@@ -30,6 +114,7 @@ func NewStanfordReader(docs indexes.ReadingChannel, collectionPath string, routi
 		ReadCounter: 0,
 		Mux: mux,
 		sem: sem,
+		stopwords: stopwords,
 	}
 	return &reader
 }
@@ -65,7 +150,7 @@ func (reader *StanfordReader) read(info os.FileInfo, path string) {
 		// Get file content as a string
 		stringFile := utils.FileToString(path)
 		// Transform it to a list of normalized tokens
-		normalizedTokens := normalizers.Normalize(stringFile, []string{})
+		normalizedTokens := normalizers.Normalize(stringFile, reader.stopwords)
 		readDoc := indexes.Document{
 			ID: counter,
 			Path: path,
