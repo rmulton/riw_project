@@ -4,6 +4,8 @@ import (
 	"sync"
 	"github.com/rmulton/riw_project/readers"
 	"github.com/rmulton/riw_project/indexBuilders"
+	"github.com/rmulton/riw_project/indexBuilders/onDiskBuilders"
+	"github.com/rmulton/riw_project/indexBuilders/inMemoryBuilders"
 	"log"
 	"time"
 	"bufio"
@@ -11,6 +13,7 @@ import (
 	"fmt"
 	"flag"
 	"github.com/rmulton/riw_project/indexes"
+	"github.com/rmulton/riw_project/indexes/requestableIndexes"
 	"github.com/rmulton/riw_project/requests"
 	"github.com/rmulton/riw_project/utils"
 )
@@ -31,7 +34,7 @@ func checkFolderExistsOrAskForAnother(folder string, helpMessage string) string 
 	return folder
 }
 
-func buildIndex(dataFolder string, collection string, inMemoryIndex bool) indexes.RequestableIndex {
+func buildIndex(dataFolder string, collection string, inMemoryIndex bool) requestableIndexes.RequestableIndex {
 	start := time.Now()
 	// Check that the given dataFolder exists or ask for another one
 	dataFolderDoesNotExistsMsg := fmt.Sprintf("The data folder %s does not exist.\n>> Please input an existing folder: ", dataFolder)
@@ -62,13 +65,13 @@ func buildIndex(dataFolder string, collection string, inMemoryIndex bool) indexe
 	// Clean "./saved" folder
 	var builder indexBuilders.IndexBuilder
 	if inMemoryIndex {
-		builder = indexBuilders.NewInMemoryBuilder(
+		builder = onDiskBuilders.NewInMemoryBuilder(
 			readingChannel,
 			10,
 			&waitGroup,
 		)
 	} else {
-		builder = indexBuilders.NewOnDiskBuilder(
+		builder = inMemoryBuilders.NewOnDiskBuilder(
 			1000000000,
 			readingChannel,
 			10,
@@ -91,7 +94,7 @@ func buildIndex(dataFolder string, collection string, inMemoryIndex bool) indexe
 
 func loadIndexFromDisk() indexes.RequestableIndex {
 	if utils.CheckPathExists("./saved/postings/") && utils.CheckPathExists("./saved/meta/idToPath") {
-		index := indexes.OnDiskIndexFromFolder("./saved/")
+		index := requestableIndexes.OnDiskIndexFromFolder("./saved/")
 		fmt.Println("Loaded existing index")
 		return index
 	} else {
@@ -137,7 +140,7 @@ func main() {
 	dataFolder, inMemoryIndex, collection, requestType, fromScratch := getFlags()
 
 	// Creating the index
-	var index indexes.RequestableIndex
+	var index requestableIndexes.RequestableIndex
 	// If the from scratch option is set to true, erase everything in "./saved/meta" and "./saved/postings"
 	if fromScratch && dataFolder==""{
 		utils.ClearOrCreatePersistedIndex("./saved")

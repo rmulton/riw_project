@@ -9,7 +9,7 @@ import (
 	"github.com/rmulton/riw_project/indexes"
 )
 
-func currentPostingListOnDisk(term string) indexes.PostingList {
+func CurrentPostingListOnDisk(term string) indexes.PostingList {
 	termFile := fmt.Sprintf("./saved/postings/%s", term)
 	err, postingListSoFar := indexes.PostingListFromFile(termFile)
 	if err != nil {
@@ -18,11 +18,11 @@ func currentPostingListOnDisk(term string) indexes.PostingList {
 	return postingListSoFar
 }
 
-func writePostingLists(writingChannel indexes.WritingChannel, waitGroup *sync.WaitGroup) {
+func WritePostingLists(writingChannel indexes.WritingChannel, waitGroup *sync.WaitGroup) {
 	defer waitGroup.Done()
 	for toWrite := range writingChannel {
 		// Write it to the disk
-		// TODO : duplicate code with currentPostingListOnDisk()
+		// TODO : duplicate code with CurrentPostingListOnDisk()
 		termFile := fmt.Sprintf("./saved/postings/%s", toWrite.Term)
 		// If the file exists, either append it or replace it according to ReplaceCurrentFile field
 		// from toWrite
@@ -33,7 +33,7 @@ func writePostingLists(writingChannel indexes.WritingChannel, waitGroup *sync.Wa
 			if toWrite.ReplaceCurrentFile {
 				postingListSoFar = toWrite.PostingList
 			} else {
-				postingListSoFar = currentPostingListOnDisk(toWrite.Term)
+				postingListSoFar = indexBuilders.CurrentPostingListOnDisk(toWrite.Term)
 				// Merge the current posting list
 				postingListSoFar.MergeWith(toWrite.PostingList)
 			}

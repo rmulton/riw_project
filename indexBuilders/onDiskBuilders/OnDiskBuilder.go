@@ -1,4 +1,4 @@
-package onDisk
+package onDiskBuilders
 
 // TODO: Add folders handler
 import (
@@ -41,9 +41,9 @@ func (builder *OnDiskBuilder) Build() {
 	// Fill the index with the documents the reader sends
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go fillIndex(builder.index, builder.readingChannel, &wg)
+	go indexBuilders.FillIndex(builder.index, builder.readingChannel, &wg)
 	// Start the disk writer
-	go writePostingLists(builder.writingChannel, &wg) // the block is copied to allow continuing operations on the builder
+	go indexBuilders.WritePostingLists(builder.writingChannel, &wg) // the block is copied to allow continuing operations on the builder
 	// Wait for the index filling to be done before finishing the index
 	wg.Wait()
 	wg.Add(1)
@@ -124,7 +124,7 @@ func (builder *OnDiskBuilder) mergeDiskMemoryThenTfIdfTerms(toMergeThenTfIdf map
 
 func (builder *OnDiskBuilder) mergeDiskMemoryThenTfIdfTerm(term string) {
 	postingList := builder.index.getPostingListForTerm(term)
-	postingListSoFar := currentPostingListOnDisk(term)
+	postingListSoFar := indexBuilders.CurrentPostingListOnDisk(term)
 	
 	// Here it is faster to load the persisted scores then get to tf-idf score rather than
 	// appending the score in memory to the file then use the functionnality to tf-idf a file
