@@ -9,8 +9,8 @@ type dumbOutputFormater struct {
 
 }
 
-func NewDumbOutputFormater() dumbOutputFormater {
-	return dumbOutputFormater{}
+func NewDumbOutputFormater() *dumbOutputFormater {
+	return &dumbOutputFormater{}
 }
 
 func (fmter *dumbOutputFormater) Output(res *indexes.PostingList) {
