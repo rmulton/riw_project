@@ -87,5 +87,5 @@ func (index *Index) ClearPostingListFor(term string) {
 
 func (index *Index) GetDocCounter() int {
 	fmt.Println(len(index.docIDToFilePath))
-	return 10
+	return len(index.docIDToFilePath)
 }
