@@ -13,7 +13,9 @@ Project done during Céline Hudelot class on Information Retrieval.
 # Design
 NB : if the collection (not the index) cannot be held in memory, check if it would be more efficient to use BSBI.
 ## Assumptions
+The priority is to have the fastest response to request time. (Which can harm the index building time).
 Any document of the collection can be held in memory.
+Compute data for the user asap.
 ## Use cases
 The goal of this project is to parse a collection of documents of any kind (for now only files), then build a reversed index to handle search request on the collection. It is designed to be used in three cases :
 
@@ -81,5 +83,6 @@ Utils contains functions to
 - Transform files to string
 - Read and write Gob files to persist golang structures
 
-# Bugs
-- Binary request with spaces between words work, which is weird
+# Further work
+- Compare persisting maps with persisting tuples or binaries that represent the posting lists and use an index
+- Write the distributed version (separate the writer from the index builder; add the network layer)

@@ -1,6 +1,5 @@
-.vscode
-consignes
-riw_project.exe
-*.test
 *.gob
+*.exe
 debug
+saved
+saved_copy

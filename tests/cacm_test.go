@@ -1,9 +1,9 @@
-package requests
+package tests
 
 import (
 	"testing"
 	"reflect"
-	"../parsers/cacm"
+	"../requests"
 )
 
 type testRequest struct {
@@ -60,6 +60,8 @@ var parseTestRequests = []parsedRequest {
 		},
 	},
 }
+
+var engine = requests.NewEngine()
 
 func TestExampleBinaryRequests(t *testing.T) {
 	// Get the index
@@ -141,5 +143,3 @@ func TestNewUserOutput(t *testing.T) {
 			t.Errorf("%v is sorted %v, should be %v", testSortedDocID.docIDs, sortedDocIDs, testSortedDocID.sortedDocIDList)
 		}
 	}
-
-}
