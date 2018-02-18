@@ -14,8 +14,8 @@ type sortDocsOutputFormater struct {
 
 type scoresToDocs map[float64][]int
 
-func NewSortDocsOutputFormater(docIDToPath map[int]string) *sortDocsOutputFormater {
-	return &sortDocsOutputFormater{
+func NewSortDocsOutputFormater(docIDToPath map[int]string) sortDocsOutputFormater {
+	return sortDocsOutputFormater{
 		docIDToPath: docIDToPath,
 	}
 }

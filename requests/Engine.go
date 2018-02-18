@@ -12,7 +12,7 @@ type Engine struct {
 	outputFormater outputFormaters.OutputFormater
 }
 
-func NewEngine(index indexes.RequestableIndex, requestType string, outputType string) *Engine {
+func NewEngine(index requestableIndexes.RequestableIndex, requestType string, outputType string) *Engine {
 	var requestHandler requestHandlers.RequestHandler
 	switch requestType {
 	case "and":
@@ -22,7 +22,7 @@ func NewEngine(index indexes.RequestableIndex, requestType string, outputType st
 	case "vectorial":
 		requestHandler = requestHandlers.NewVectorizedRequestHandler(index)
 	}
-	var outputFormater outputFormater
+	var outputFormater outputFormaters.OutputFormater
 	switch outputType {
 	case "sorted":
 		outputFormater = outputFormaters.NewSortDocsOutputFormater(index.GetDocIDToPath())

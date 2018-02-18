@@ -10,8 +10,8 @@ type andRequestHandler struct {
 	index requestableIndexes.RequestableIndex
 }
 
-func NewAndRequestHandler(index requestableIndexes.RequestableIndex) *andRequestHandler {
-	return &andRequestHandler{index}
+func NewAndRequestHandler(index requestableIndexes.RequestableIndex) andRequestHandler {
+	return andRequestHandler{index}
 }
 
 func (reqHandler *andRequestHandler) request(request string) *indexes.PostingList {
