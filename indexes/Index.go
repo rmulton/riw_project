@@ -83,11 +83,9 @@ func (index *Index) AddDocToIndex(docID int, docPath string) {
 
 func (index *Index) ClearPostingListFor(term string) {
 	delete(index.postingLists, term)
-	// TODO: decide which one is the more efficient
-	// emptyPostingList := make(PostingList)
-	// index.postingLists[term] = emptyPostingList
 }
 
 func (index *Index) GetDocCounter() int {
-	return len(index.docIDToFilePath)
+	fmt.Println(len(index.docIDToFilePath))
+	return 10
 }
