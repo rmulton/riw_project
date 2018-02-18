@@ -1,10 +1,9 @@
 package requests
 
 import (
-	// "fmt"
 	"strings"
-	"../indexes"
-	"../normalizers"
+	"github.com/rmulton/riw_project/indexes"
+	"github.com/rmulton/riw_project/normalizers"
 )
 
 type binaryRequestHandler struct {

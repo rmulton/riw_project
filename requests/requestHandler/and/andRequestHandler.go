@@ -1,8 +1,8 @@
 package requests
 
 import (
-	"../indexes"
-	"../normalizers"
+	"github.com/rmulton/riw_project/indexes"
+	"github.com/rmulton/riw_project/normalizers"
 )
 
 type andRequestHandler struct {

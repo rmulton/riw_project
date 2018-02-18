@@ -1,7 +1,7 @@
 package indexes
 
 import (
-	"../utils"
+	"github.com/rmulton/riw_project/utils"
 	"log"
 )
 type InMemoryIndex struct {

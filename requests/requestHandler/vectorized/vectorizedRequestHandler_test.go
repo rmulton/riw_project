@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 	"math"
-	"../indexBuilders"
-	"../indexes"
+	"github.com/rmulton/riw_project/indexBuilders"
+	"github.com/rmulton/riw_project/indexes"
 )
 
 var someVecRequests = map[string]indexes.PostingList {

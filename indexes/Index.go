@@ -46,14 +46,12 @@ func (index *Index) PrintPostings() {
 // delegate it to the BufferIndex and the builders. This way, Index can be used in a variety
 // of cases
 func (index *Index) ToTfIdf(corpusSize int) {
-	// TODO: Parallelize
 	for _, postingList := range index.postingLists {
 		postingList.TfIdf(corpusSize)
 	}
 }
 
 func (index *Index) ToTfIdfTerms(corpusSize int, terms map[string]bool) {
-	// TODO: Parallelize
 	for term, _ := range terms {
 		index.postingLists[term].TfIdf(corpusSize)
 	}

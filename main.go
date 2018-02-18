@@ -45,7 +45,7 @@ func buildIndex(dataFolder string, collection string, inMemoryIndex bool) indexe
 	if collection=="stanford" {
 		reader = readers.NewStanfordReader(
 			readingChannel,
-			"../consignes/Data/CS276/pa1-data",
+			dataFolder,
 			10,
 			&waitGroup,
 		)
@@ -53,7 +53,7 @@ func buildIndex(dataFolder string, collection string, inMemoryIndex bool) indexe
 	} else {
 		reader = readers.NewCACMReader(
 			readingChannel,
-			"../consignes/Data/cacm",
+			dataFolder,
 			5,
 			&waitGroup,
 			)
@@ -70,7 +70,6 @@ func buildIndex(dataFolder string, collection string, inMemoryIndex bool) indexe
 	} else {
 		builder = indexBuilders.NewOnDiskBuilder(
 			1000000000,
-			"./saved",
 			readingChannel,
 			10,
 			&waitGroup,

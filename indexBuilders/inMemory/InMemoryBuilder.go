@@ -1,9 +1,9 @@
-package indexBuilders
+package inMemory
 
 import (
 	"sync"
 	"log"
-	"../indexes"
+	"github.com/rmulton/riw_project/indexBuilders/inMemory"
 )
 
 type InMemoryBuilder struct {
@@ -24,7 +24,11 @@ func NewInMemoryBuilder(readingChannel indexes.ReadingChannel, routines int, par
 
 func (builder *InMemoryBuilder) Build() {
 	defer builder.parentWaitGroup.Done()
-	builder.readDocs()
+	var wg sync.WaitGroup
+	wg.Add(1)
+	fillIndex(builder.index, builder.readingChannel, &wg)
+	wg.Wait()
+	builder.finish()
 	log.Printf("Done filling with %d documents", builder.docCounter)
 }
 
@@ -33,30 +37,6 @@ func (builder *InMemoryBuilder) GetIndex() indexes.RequestableIndex {
 	return indexes.InMemoryIndexFromIndex(builder.index)
 }
 
-func (builder *InMemoryBuilder) readDocs() {
-	for doc := range builder.readingChannel {
-		builder.addDoc(doc)
-		builder.docCounter++
-	}
-	builder.finish()
-	log.Printf("Done getting %d documents", builder.docCounter)
-}
-
 func (builder *InMemoryBuilder) finish() {
 	builder.index.ToTfIdf(builder.docCounter)
-}
-
-// Add a document to the current block
-// NB: Might evolve to allow filling several blocks at the same time
-func (builder *InMemoryBuilder) addDoc(doc indexes.Document) {
-
-	// TODO: use routines to parallelize addDocToIndex and addDocToTerm
-
-	// Add the path to the doc to the map
-	builder.index.AddDocToIndex(doc.ID, doc.Path)
-
-	for _, term := range doc.NormalizedTokens {
-		//	Add this document to the posting list of this term
-		builder.index.AddDocToTerm(doc.ID, term)
-	}
 }

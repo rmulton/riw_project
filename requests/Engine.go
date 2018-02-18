@@ -1,7 +1,7 @@
 package requests
 
 import (
-	"../indexes"
+	"github.com/rmulton/riw_project/indexes"
 )
 
 type Engine struct {

@@ -4,8 +4,8 @@ import (
 	"math"
 	"fmt"
 	"sort"
-	"../indexes"
-	"../utils"
+	"github.com/rmulton/riw_project/indexes"
+	"github.com/rmulton/riw_project/utils"
 )
 
 type sortDocsOutputFormater struct {

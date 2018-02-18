@@ -2,7 +2,7 @@ package requests
 
 import (
 	"fmt"
-	"../indexes"
+	"github.com/rmulton/riw_project/indexes"
 )
 
 type dumbOutputFormater struct {

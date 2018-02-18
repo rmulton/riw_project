@@ -1,24 +1,25 @@
-package indexBuilders
+package indexes
 
 import (
-	"../indexes"
-	"../utils"
+	"github.com/rmulton/riw_project/utils"
 	"sync"
-	// "log"
+	"log"
+	"io/ioutil"
 )
 
 type BufferIndex struct {
 	Mux *sync.Mutex
 	bufferSize int
 	currentSize int
-	writingChannel indexes.WritingChannel
-	index *indexes.Index
+	docCounter int
+	writingChannel WritingChannel
+	index *Index
 
 }
 
-func NewBufferIndex(bufferSize int, writingChannel indexes.WritingChannel) *BufferIndex {
+func NewBufferIndex(bufferSize int, writingChannel WritingChannel) *BufferIndex {
 	var mux sync.Mutex
-	index := indexes.NewEmptyIndex()
+	index := NewEmptyIndex()
 	return &BufferIndex{
 		writingChannel: writingChannel,
 		Mux: &mux,
@@ -28,13 +29,14 @@ func NewBufferIndex(bufferSize int, writingChannel indexes.WritingChannel) *Buff
 }
 
 // Used to fill the posting lists
-func (buffer *BufferIndex) addDocToTerm(docID int, term string) {
+func (buffer *BufferIndex) AddDocToTerm(docID int, term string) {
 	buffer.index.AddDocToTerm(docID, term)
 	buffer.currentSize++
 }
 
 // Add a new document in the index so that index keep trace of docID -> doc
-func (buffer *BufferIndex) addDocToIndex(docID int, docPath string) {
+func (buffer *BufferIndex) AddDocToIndex(docID int, docPath string) {
+	buffer.docCounter++
 	if buffer.currentSize >= buffer.bufferSize && buffer.bufferSize != -1 { // NB: This is a very important decision for the system. Using the biggest posting list might not be the best one.
 		buffer.writeBiggestPostingList()
 	}
@@ -63,23 +65,20 @@ func (buffer *BufferIndex) writeBiggestPostingList() {
 	buffer.currentSize -= max
 	buffer.Mux.Unlock()
 
-	// log.Printf("Writing posting list for %s", termWithLongestPostingList)
-	// go longestPostingList.appendToTermFile(termWithLongestPostingList, index.writingChannel)
-	// log.Printf("Appending to term file from writeBiggestPostingList term %s", termWithLongestPostingList)
 	buffer.appendToTermFile(longestPostingList, termWithLongestPostingList, false)
 }
 
 // TODO : avoid code repition by building buffer.appendPostingListOnDisk(term)
 
 // Should be done by the buffer index instead
-func (buffer *BufferIndex) appendToTermFile(postingList indexes.PostingList, term string, replace bool) {
+func (buffer *BufferIndex) appendToTermFile(postingList PostingList, term string, replace bool) {
 	// Here is the problem: the score is added to the file instead of replacing it
 	// TODO: Clean the mechanics that's below
-	var bufferPostingList indexes.BufferPostingList
+	var bufferPostingList BufferPostingList
 	if replace {
-		bufferPostingList = indexes.NewReplacingBufferPostingList(term, postingList)
+		bufferPostingList = NewReplacingBufferPostingList(term, postingList)
 	} else {
-		bufferPostingList = indexes.NewBufferPostingList(term, postingList)
+		bufferPostingList = NewBufferPostingList(term, postingList)
 	}
 	buffer.writingChannel <- bufferPostingList
 }
@@ -95,12 +94,8 @@ func (buffer *BufferIndex) writePostingListForTerms(terms map[string]bool) {
 // Used only for InMemoryBuilder
 func (buffer *BufferIndex) writeAllPostingLists() {
 	defer close(buffer.writingChannel)
-	// log.Printf("Writing remaining posting lists")
 	for term, postingList := range buffer.index.GetPostingLists() {
-		// fmt.Printf("Writing posting list for %s", term)
-		// log.Printf("Appending to term file from writeAllPostingList term %s", term)
 		buffer.appendToTermFile(postingList, term, true)
-		// go postingList.appendToTermFile(term, index.writingChannel)
 	}
 }
 
@@ -108,14 +103,64 @@ func (buffer *BufferIndex) toTfIdf(corpusSize int) {
 	buffer.index.ToTfIdf(corpusSize)
 }
 
-func (buffer *BufferIndex) toTfIdfTerms(corpusSize int, terms map[string]bool) {
-	buffer.index.ToTfIdfTerms(corpusSize, terms)
+func (buffer *BufferIndex) toTfIdfTerms(terms map[string]bool) {
+	buffer.index.ToTfIdfTerms(buffer.docCounter, terms)
 }
 
 func (buffer *BufferIndex) writeDocIDToFilePath(path string) {
 	utils.WriteGob(path, buffer.index.GetDocIDToFilePath())
 }
 
-func (buffer *BufferIndex) getPostingListForTerm(term string) indexes.PostingList {
+func (buffer *BufferIndex) getPostingListForTerm(term string) PostingList {
 	return buffer.index.GetPostingListForTerm(term)
+}
+
+/* Find out which terms are in memory, on disk or both */
+
+func (buffer *BufferIndex) categorizeTerms() (map[string]bool, map[string]bool, map[string]bool) {
+	onDiskTerms := getOnDiskTerms()
+	inMemoryTerms := buffer.getInMemoryTerms()
+	onDiskOnly, inMemoryOnly, onDiskAndInMemory := separate(onDiskTerms, inMemoryTerms)
+	return onDiskOnly, inMemoryOnly, onDiskAndInMemory
+}
+
+func getOnDiskTerms() map[string]bool {
+	onDiskTerms := make(map[string]bool)
+	files, err := ioutil.ReadDir("./saved/postings/")
+    if err != nil {
+        log.Println(err)
+    }
+    for _, f := range files {
+			onDiskTerms[f.Name()] = true
+    }
+	return onDiskTerms
+}
+
+func (buffer *BufferIndex) getInMemoryTerms() map[string]bool {
+	inMemoryTerms := make(map[string]bool)
+	for term, _ := range buffer.index.GetPostingLists() {
+		inMemoryTerms[term] = true
+	}
+	return inMemoryTerms
+}
+
+func separate(first map[string]bool, second map[string]bool) (map[string]bool, map[string]bool, map[string]bool) {
+	onlyFirst := make(map[string]bool)
+	onlySecond := make(map[string]bool)
+	both := make(map[string]bool)
+	for firstKey, _ := range first {
+		_, exists := second[firstKey]
+		if exists {
+			both[firstKey] = true
+		} else {
+			onlyFirst[firstKey] = true
+		}
+	}
+	for secondKey, _ := range second {
+		_, exists := both[secondKey]
+		if !exists {
+			onlySecond[secondKey] = true
+		}
+	}
+	return onlyFirst, onlySecond, both
 }

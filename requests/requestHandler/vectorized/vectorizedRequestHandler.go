@@ -1,9 +1,8 @@
 package requests
 
 import (
-	"../indexes"
-	"../normalizers"
-	// "fmt"
+	"github.com/rmulton/riw_project/indexes"
+	"github.com/rmulton/riw_project/normalizers"
 )
 
 type vectorizedRequestHandler struct {

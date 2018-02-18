@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"sync"
 	"log"
-	"../normalizers"
-	"../utils"
-	"../indexes"
+	"github.com/rmulton/riw_project/normalizers"
+	"github.com/rmulton/riw_project/utils"
+	"github.com/rmulton/riw_project/indexes"
 )
 
 type StanfordReader struct {

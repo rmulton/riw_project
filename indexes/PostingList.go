@@ -2,7 +2,7 @@ package indexes
 
 import (
 	"math"
-	"../utils"
+	"github.com/rmulton/riw_project/utils"
 )
 
 // PostingList is a docID -> score map

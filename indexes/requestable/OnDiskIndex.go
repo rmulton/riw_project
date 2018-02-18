@@ -3,7 +3,7 @@ package indexes
 import (
 	"fmt"
 	"log"
-	"../utils"
+	"github.com/rmulton/riw_project/utils"
 )
 type OnDiskIndex struct {
 	folderPath string
