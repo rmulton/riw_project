@@ -115,7 +115,7 @@ func (buffer *BufferIndex) WriteDocIDToFilePath(path string) {
 	utils.WriteGob(path, buffer.index.GetDocIDToFilePath())
 }
 
-func (buffer *BufferIndex) getPostingListForTerm(term string) (indexes.PostingList, bool) {
+func (buffer *BufferIndex) GetPostingListForTerm(term string) (indexes.PostingList, bool) {
 	return buffer.index.GetPostingListForTerm(term)
 }
 
