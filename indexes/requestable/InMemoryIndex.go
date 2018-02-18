@@ -1,4 +1,4 @@
-package indexes
+package requestable
 
 import (
 	"github.com/rmulton/riw_project/utils"

@@ -1,4 +1,4 @@
-package indexes
+package requestable
 
 import (
 	"fmt"
@@ -44,14 +44,15 @@ func (odi *OnDiskIndex) unloadTerm(term string) {
 	odi.index.ClearPostingListFor(term)
 }
 
-func (odi *OnDiskIndex) GetPostingListsForTerms(terms []string) map[string]PostingList {
-	postingListsForTerms := make(map[string]PostingList)
+func (odi *OnDiskIndex) GetPostingListsForTerms(terms []string) map[string]indexes.PostingList {
+	postingListsForTerms := make(map[string]indexes.PostingList)
 	err := odi.LoadTerms(terms)
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
 	for _, term := range terms {
-		postingListsForTerms[term] = odi.index.postingLists[term]
+		postingList, _ := odi.index.GetPostingListForTerm(term)
+		postingListsForTerms[term] = postingList
 	}
 	return postingListsForTerms
 }
@@ -67,5 +68,5 @@ func (odi *OnDiskIndex) LoadTerms(terms []string) error {
 }
 
 func (index *OnDiskIndex) GetDocIDToPath() map[int]string {
-	return index.index.docIDToFilePath
+	return index.index.GetDocIDToFilePath()
 }
