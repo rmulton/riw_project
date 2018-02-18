@@ -1,4 +1,4 @@
-package requests
+package outputFormaters
 
 import (
 	"github.com/rmulton/riw_project/indexes"
