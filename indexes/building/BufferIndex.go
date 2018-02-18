@@ -86,7 +86,10 @@ func (buffer *BufferIndex) appendToTermFile(postingList indexes.PostingList, ter
 
 func (buffer *BufferIndex) writePostingListForTerms(terms map[string]bool) {
 	for term, _ := range terms {
-		postingList := buffer.index.GetPostingListForTerm(term)
+		postingList, exists := buffer.index.GetPostingListForTerm(term)
+		if !exists {
+			log.Printf("Trying to writing the posting list of %s that is not in the index", term)
+		}
 		buffer.appendToTermFile(postingList, term, false)
 	}
 }
@@ -112,7 +115,7 @@ func (buffer *BufferIndex) writeDocIDToFilePath(path string) {
 	utils.WriteGob(path, buffer.index.GetDocIDToFilePath())
 }
 
-func (buffer *BufferIndex) getPostingListForTerm(term string) indexes.PostingList {
+func (buffer *BufferIndex) getPostingListForTerm(term string) (indexes.PostingList, bool) {
 	return buffer.index.GetPostingListForTerm(term)
 }
 
