@@ -2,32 +2,32 @@ package requests
 
 import (
 	"github.com/rmulton/riw_project/indexes/requestable"
-	"github.com/rmulton/riw_project/requests/requestHandler"
-	"github.com/rmulton/riw_project/requests/outputFormater"
+	"github.com/rmulton/riw_project/requests/requestHandlers"
+	"github.com/rmulton/riw_project/requests/outputFormaters"
 )
 
 type Engine struct {
 	index requestable.RequestableIndex
-	requestHandler requestHandler
-	outputFormater outputFormater
+	requestHandler requestHandlers.RequestHandler
+	outputFormater outputFormaters.OutputFormater
 }
 
 func NewEngine(index indexes.RequestableIndex, requestType string, outputType string) *Engine {
-	var requestHandler requestHandler
+	var requestHandler requestHandlers.RequestHandler
 	switch requestType {
 	case "and":
-		requestHandler = NewAndRequestHandler(index)
+		requestHandler = requestHandlers.NewAndRequestHandler(index)
 	case "binary":
-		requestHandler = NewBinaryRequestHandler(index)
+		requestHandler = requestHandlers.NewBinaryRequestHandler(index)
 	case "vectorial":
-		requestHandler = NewVectorizedRequestHandler(index)
+		requestHandler = requestHandlers.NewVectorizedRequestHandler(index)
 	}
 	var outputFormater outputFormater
 	switch outputType {
 	case "sorted":
-		outputFormater = NewSortDocsOutputFormater(index.GetDocIDToPath())
+		outputFormater = outputFormaters.NewSortDocsOutputFormater(index.GetDocIDToPath())
 	case "dumb":
-		outputFormater = NewDumbOutputFormater()
+		outputFormater = outputFormaters.NewDumbOutputFormater()
 	}
 	return &Engine{
 		index: index,
@@ -37,7 +37,7 @@ func NewEngine(index indexes.RequestableIndex, requestType string, outputType st
 }
 
 func (engine *Engine) Request (request string) {
-	res := engine.requestHandler.request(request)
-	engine.outputFormater.output(res)
+	res := engine.requestHandler.Request(request)
+	engine.outputFormater.Output(res)
 }
 

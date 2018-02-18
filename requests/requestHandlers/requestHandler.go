@@ -4,6 +4,6 @@ import (
 	"github.com/rmulton/riw_project/indexes"
 )
 
-type requestHandler interface {
-	request(string) *indexes.PostingList
+type RequestHandler interface {
+	Request(string) *indexes.PostingList
 }

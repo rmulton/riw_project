@@ -1,4 +1,4 @@
-package indexes
+package building
 
 type BuildingIndex interface {
 	AddDocToTerm(int, string)
