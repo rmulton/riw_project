@@ -2,6 +2,7 @@ package onDiskBuilders
 
 // TODO: Add folders handler
 import (
+	"github.com/rmulton/riw_project/indexes/buildingIndexes"
 	"sync"
 	"os"
 	"log"
@@ -14,7 +15,7 @@ import (
 //    - feeding a buffer index with it
 //    - getting the index from frequency scores to tf-idf scores
 type OnDiskBuilder struct {
-	index *indexes.BufferIndex
+	index *buildingIndexes.BufferIndex
 	parentWaitGroup *sync.WaitGroup
 	bufferSize int
 	readingChannel indexes.ReadingChannel

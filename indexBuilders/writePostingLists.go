@@ -33,7 +33,7 @@ func WritePostingLists(writingChannel indexes.WritingChannel, waitGroup *sync.Wa
 			if toWrite.ReplaceCurrentFile {
 				postingListSoFar = toWrite.PostingList
 			} else {
-				postingListSoFar = indexBuilders.CurrentPostingListOnDisk(toWrite.Term)
+				postingListSoFar = CurrentPostingListOnDisk(toWrite.Term)
 				// Merge the current posting list
 				postingListSoFar.MergeWith(toWrite.PostingList)
 			}
