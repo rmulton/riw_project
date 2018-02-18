@@ -40,5 +40,5 @@ func (builder *InMemoryBuilder) GetIndex() requestableIndexes.RequestableIndex {
 }
 
 func (builder *InMemoryBuilder) finish() {
-	builder.index.ToTfIdf(builder.docCounter)
+	builder.index.ToTfIdf(builder.index.GetDocCounter())
 }

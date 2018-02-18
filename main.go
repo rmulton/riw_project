@@ -79,7 +79,7 @@ func buildIndex(dataFolder string, collection string, inMemoryIndex bool) reques
 			)
 	}
 	// Build the index
-	fmt.Printf("Building an index for the %s collection using data from %s\n", collection, dataFolder)
+	log.Printf("Building an index for the %s collection using data from %s\n", collection, dataFolder)
 	waitGroup.Add(2)
 	go reader.Read()
 	go builder.Build()

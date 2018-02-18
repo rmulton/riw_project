@@ -19,7 +19,7 @@ func OnDiskIndexFromFolder(folderPath string) *OnDiskIndex {
 	if err != nil {
 		log.Println("Error while building the index from on disk files: %v", err)
 	}
-	index := indexes.NewEmptyIndex()
+	index := indexes.NewIndexWithDocIDToPath(docIDToFilePath)
 	return &OnDiskIndex{
 		folderPath: folderPath,
 		index: index,

@@ -2,15 +2,13 @@ package normalizers
 
 import (
 	"regexp"
+	"log"
 	"github.com/kljensen/snowball"
 )
 
 // Get a normalized token list from a string
 func Normalize(paragraph string, stopwords []string) []string {
-	// tokens := strings.FieldsFunc(paragraph, func(r rune) bool {
-		// return r == ' ' || r == '.' || r == '\n' || r == ',' || r == '?' || r == '!' || r == '(' || r == ')' || r == '*' || r == ';' || r == '"' || r == '\'' || r == ':' || r == '{' || r == '}' || r == '/' || r == '|'
-	// })
-	wordRegex := regexp.MustCompile("[A-z0-9\\-\\_\\.]*")
+	wordRegex := regexp.MustCompile("[A-z0-9][A-z0-9\\.\\_\\/]+[A-z0-9]") // avoids having dots or slashes at the begining or the end of the name of the file
 	tokens := wordRegex.FindAllString(paragraph, -1)
 
 	return normalizeWords(tokens, stopwords)

@@ -229,7 +229,7 @@ func TestBuildOnDisk(t *testing.T) {
 	}
 	// Check the docID to path map
 	if !reflect.DeepEqual(index.GetDocIDToPath(), expectedDocIDToFilePath) {
-		t.Errorf("DocID to path is not correct")
+		t.Errorf("DocID to path is not correct. It should be %#v, not %#v", expectedDocIDToFilePath, index.GetDocIDToPath())
 	}
 	// Clear the folder after
 	os.RemoveAll("./saved")

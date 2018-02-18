@@ -64,7 +64,7 @@ func (fmter *sortDocsOutputFormater) sort(res *indexes.PostingList) ([]float64, 
 	}
 
 	sort.Sort(sort.Reverse(sort.Float64Slice(scores)))
-	fmt.Printf("\nFound %d documents:\n\n", docCounter)
+	fmt.Printf("\n> Found %d documents:\n\n", docCounter)
 	return scores, scoresToDocs
 	
 }

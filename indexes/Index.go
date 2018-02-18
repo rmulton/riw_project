@@ -20,6 +20,14 @@ func NewEmptyIndex() *Index {
 	}
 }
 
+func NewIndexWithDocIDToPath(docIDToPath map[int]string) *Index {
+	postingLists := make(map[string]PostingList)
+	return &Index{
+		postingLists: postingLists,
+		docIDToFilePath: docIDToPath,
+	}
+}
+
 func (index *Index) GetPostingLists() map[string]PostingList {
 	return index.postingLists
 }
@@ -86,6 +94,5 @@ func (index *Index) ClearPostingListFor(term string) {
 }
 
 func (index *Index) GetDocCounter() int {
-	fmt.Println(len(index.docIDToFilePath))
 	return len(index.docIDToFilePath)
 }
