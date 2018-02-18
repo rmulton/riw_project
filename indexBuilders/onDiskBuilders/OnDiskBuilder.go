@@ -85,8 +85,8 @@ func (builder *OnDiskBuilder) finish() {
 //    - writing their posting lists
 func (builder *OnDiskBuilder) writeTfIdfInMemoryTerms(inMemoryTerms map[string]bool, waitGroup *sync.WaitGroup) {
 	defer waitGroup.Done()
-	builder.index.toTfIdfTerms(inMemoryTerms)
-	builder.index.writePostingListForTerms(inMemoryTerms)
+	builder.index.ToTfIdfTerms(inMemoryTerms)
+	builder.index.WritePostingListForTerms(inMemoryTerms)
 }
 
 // tfIdfOnDiskTerms handles getting from frequency scores to tf-idf scores for terms that are only on the disk
@@ -136,5 +136,5 @@ func (builder *OnDiskBuilder) mergeDiskMemoryThenTfIdfTerm(term string) {
 	// next version.
 	postingList.MergeWith(postingListSoFar)
 	postingList.TfIdf(builder.index.docCounter)
-	builder.index.appendToTermFile(postingList, term, true)
+	builder.index.AppendToTermFile(postingList, term, true)
 }

@@ -46,7 +46,7 @@ func (buffer *BufferIndex) AddDocToIndex(docID int, docPath string) {
 
 // /!\ MAYBE IT WOULD BE BETTER TO HAVE A ROUTINE WORKING ON WRITING THE POSTING LISTS
 // AND USE RWLock instead of Lock
-func (buffer *BufferIndex) writeBiggestPostingList() {
+func (buffer *BufferIndex) WriteBiggestPostingList() {
 	buffer.Mux.Lock()
 	// Find the longest posting list
 	var termWithLongestPostingList string
@@ -66,13 +66,13 @@ func (buffer *BufferIndex) writeBiggestPostingList() {
 	buffer.currentSize -= max
 	buffer.Mux.Unlock()
 
-	buffer.appendToTermFile(longestPostingList, termWithLongestPostingList, false)
+	buffer.AppendToTermFile(longestPostingList, termWithLongestPostingList, false)
 }
 
 // TODO : avoid code repition by buildingIndexes buffer.appendPostingListOnDisk(term)
 
 // Should be done by the buffer index instead
-func (buffer *BufferIndex) appendToTermFile(postingList indexes.PostingList, term string, replace bool) {
+func (buffer *BufferIndex) AppendToTermFile(postingList indexes.PostingList, term string, replace bool) {
 	// Here is the problem: the score is added to the file instead of replacing it
 	// TODO: Clean the mechanics that's below
 	var bufferPostingList indexes.BufferPostingList
@@ -90,16 +90,16 @@ func (buffer *BufferIndex) WritePostingListForTerms(terms map[string]bool) {
 		if !exists {
 			log.Printf("Trying to writing the posting list of %s that is not in the index", term)
 		}
-		buffer.appendToTermFile(postingList, term, false)
+		buffer.AppendToTermFile(postingList, term, false)
 	}
 }
 
 // When no more documents are to be read
 // Used only for InMemoryBuilder
-func (buffer *BufferIndex) writeAllPostingLists() {
+func (buffer *BufferIndex) WriteAllPostingLists() {
 	defer close(buffer.writingChannel)
 	for term, postingList := range buffer.index.GetPostingLists() {
-		buffer.appendToTermFile(postingList, term, true)
+		buffer.AppendToTermFile(postingList, term, true)
 	}
 }
 
@@ -107,11 +107,11 @@ func (buffer *BufferIndex) toTfIdf(corpusSize int) {
 	buffer.index.ToTfIdf(corpusSize)
 }
 
-func (buffer *BufferIndex) toTfIdfTerms(terms map[string]bool) {
+func (buffer *BufferIndex) ToTfIdfTerms(terms map[string]bool) {
 	buffer.index.ToTfIdfTerms(buffer.docCounter, terms)
 }
 
-func (buffer *BufferIndex) writeDocIDToFilePath(path string) {
+func (buffer *BufferIndex) WriteDocIDToFilePath(path string) {
 	utils.WriteGob(path, buffer.index.GetDocIDToFilePath())
 }
 
