@@ -110,7 +110,7 @@ func (builder *OnDiskBuilder) fileToTfIdfForTerm(term string, path string) {
 	if err != nil {
 		log.Println(err)
 	}
-	postingList.TfIdf(builder.index.docCounter) // TODO ? check that docCounter = len(os.listdir)
+	postingList.TfIdf(builder.index.GetDocCounter()) // TODO ? check that docCounter = len(os.listdir)
 	builder.writingChannel <- indexes.NewReplacingBufferPostingList(term, postingList)
 }
 
@@ -126,7 +126,7 @@ func (builder *OnDiskBuilder) mergeDiskMemoryThenTfIdfTerms(toMergeThenTfIdf map
 }
 
 func (builder *OnDiskBuilder) mergeDiskMemoryThenTfIdfTerm(term string) {
-	postingList := builder.index.getPostingListForTerm(term)
+	postingList, _ := builder.index.GetPostingListForTerm(term)
 	postingListSoFar := indexBuilders.CurrentPostingListOnDisk(term)
 	
 	// Here it is faster to load the persisted scores then get to tf-idf score rather than
@@ -135,6 +135,6 @@ func (builder *OnDiskBuilder) mergeDiskMemoryThenTfIdfTerm(term string) {
 	// Finisher struct that handle finishing indexes and a Writer that handles writing for the
 	// next version.
 	postingList.MergeWith(postingListSoFar)
-	postingList.TfIdf(builder.index.docCounter)
+	postingList.TfIdf(builder.index.GetDocCounter())
 	builder.index.AppendToTermFile(postingList, term, true)
 }
