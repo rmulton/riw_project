@@ -15,7 +15,7 @@ func NewVectorizedRequestHandler(index requestableIndexes.RequestableIndex) vect
 	return vectorizedRequestHandler{index}
 }
 
-func (reqHandler *vectorizedRequestHandler) request(request string) *indexes.PostingList {
+func (reqHandler *vectorizedRequestHandler) Request(request string) *indexes.PostingList {
 	// Tokenize and normalize the request
 	terms := normalizers.Normalize(request, []string{})
 	postingListsForTerms := reqHandler.index.GetPostingListsForTerms(terms)

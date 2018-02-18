@@ -14,7 +14,7 @@ func NewAndRequestHandler(index requestableIndexes.RequestableIndex) andRequestH
 	return andRequestHandler{index}
 }
 
-func (reqHandler *andRequestHandler) request(request string) *indexes.PostingList {
+func (reqHandler *andRequestHandler) Request(request string) *indexes.PostingList {
 	terms := normalizers.Normalize(request, []string{})
 	postingListsForTerms := reqHandler.index.GetPostingListsForTerms(terms)
 

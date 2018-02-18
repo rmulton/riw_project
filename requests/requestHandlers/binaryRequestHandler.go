@@ -16,7 +16,7 @@ func NewBinaryRequestHandler(index requestableIndexes.RequestableIndex) *binaryR
 	return &binaryRequestHandler{index}
 }
 
-func (reqHandler *binaryRequestHandler) request(request string) *indexes.PostingList {
+func (reqHandler *binaryRequestHandler) Request(request string) *indexes.PostingList {
 	conjClauses := strings.Split(request, "|")
 	res := make(indexes.PostingList)
 	for _, clause := range conjClauses {

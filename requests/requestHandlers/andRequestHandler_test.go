@@ -91,7 +91,7 @@ func TestAndRequestHandler(t *testing.T) {
 	// Test the request handler
 	andRequestHandler := NewAndRequestHandler(index)
 	for request, expectedResponse := range someRequests {
-		res := andRequestHandler.request(request)
+		res := andRequestHandler.Request(request)
 		if !reflect.DeepEqual(*res, expectedResponse) {
 			t.Errorf("Response to %s should be %v, not %v", request, expectedResponse, *res)
 		}

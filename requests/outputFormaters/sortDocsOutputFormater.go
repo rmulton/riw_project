@@ -20,7 +20,7 @@ func NewSortDocsOutputFormater(docIDToPath map[int]string) sortDocsOutputFormate
 	}
 }
 
-func (fmter *sortDocsOutputFormater) output(res *indexes.PostingList) {
+func (fmter *sortDocsOutputFormater) Output(res *indexes.PostingList) {
 	var rank int
 	scores, scoresToDocs := fmter.sort(res)
 	if scoresToDocs != nil && scores != nil {

@@ -40,7 +40,7 @@ func TestVecRequestHandler(t *testing.T) {
 	// Test the request handler
 	vecRequestHandler := NewVectorizedRequestHandler(index)
 	for request, expectedResponse := range someVecRequests {
-		res := vecRequestHandler.request(request)
+		res := vecRequestHandler.Request(request)
 		if !reflect.DeepEqual(*res, expectedResponse) {
 			t.Errorf("Response to %s should be %v, not %v", request, expectedResponse, *res)
 		}

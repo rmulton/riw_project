@@ -13,7 +13,7 @@ func NewDumbOutputFormater() dumbOutputFormater {
 	return dumbOutputFormater{}
 }
 
-func (fmter *dumbOutputFormater) output(res *indexes.PostingList) {
+func (fmter *dumbOutputFormater) Output(res *indexes.PostingList) {
 	if res != nil {
 		fmt.Printf("%v\n", res)
 		fmt.Printf("Length: %v\n", len(*res))
