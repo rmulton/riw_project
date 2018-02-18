@@ -6,7 +6,7 @@ import (
 	"os"
 	"log"
 	"path/filepath"
-	"github.com/rmulton/riw_projet/indexes"
+	"github.com/rmulton/riw_project/indexes"
 )
 
 // OnDiskBuilder handles
