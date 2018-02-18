@@ -2,6 +2,7 @@ package indexes
 
 import (
 	"github.com/rmulton/riw_project/utils"
+	"github.com/rmulton/riw_project/indexes"
 	"sync"
 	"log"
 	"io/ioutil"
@@ -12,14 +13,14 @@ type BufferIndex struct {
 	bufferSize int
 	currentSize int
 	docCounter int
-	writingChannel WritingChannel
-	index *Index
+	writingChannel indexes.WritingChannel
+	index *indexes.Index
 
 }
 
-func NewBufferIndex(bufferSize int, writingChannel WritingChannel) *BufferIndex {
+func NewBufferIndex(bufferSize int, writingChannel indexes.WritingChannel) *BufferIndex {
 	var mux sync.Mutex
-	index := NewEmptyIndex()
+	index := indexes.NewEmptyIndex()
 	return &BufferIndex{
 		writingChannel: writingChannel,
 		Mux: &mux,
@@ -71,14 +72,14 @@ func (buffer *BufferIndex) writeBiggestPostingList() {
 // TODO : avoid code repition by building buffer.appendPostingListOnDisk(term)
 
 // Should be done by the buffer index instead
-func (buffer *BufferIndex) appendToTermFile(postingList PostingList, term string, replace bool) {
+func (buffer *BufferIndex) appendToTermFile(postingList indexes.PostingList, term string, replace bool) {
 	// Here is the problem: the score is added to the file instead of replacing it
 	// TODO: Clean the mechanics that's below
-	var bufferPostingList BufferPostingList
+	var bufferPostingList indexes.BufferPostingList
 	if replace {
-		bufferPostingList = NewReplacingBufferPostingList(term, postingList)
+		bufferPostingList = indexes.NewReplacingBufferPostingList(term, postingList)
 	} else {
-		bufferPostingList = NewBufferPostingList(term, postingList)
+		bufferPostingList = indexes.NewBufferPostingList(term, postingList)
 	}
 	buffer.writingChannel <- bufferPostingList
 }
@@ -111,7 +112,7 @@ func (buffer *BufferIndex) writeDocIDToFilePath(path string) {
 	utils.WriteGob(path, buffer.index.GetDocIDToFilePath())
 }
 
-func (buffer *BufferIndex) getPostingListForTerm(term string) PostingList {
+func (buffer *BufferIndex) getPostingListForTerm(term string) indexes.PostingList {
 	return buffer.index.GetPostingListForTerm(term)
 }
 

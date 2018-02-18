@@ -2,12 +2,13 @@ package indexes
 
 import (
 	"github.com/rmulton/riw_project/utils"
+	"github.com/rmulton/riw_project/indexes"
 	"log"
 )
 type InMemoryIndex struct {
-	index *Index
+	index *indexes.Index
 }
-func InMemoryIndexFromIndex(index *Index) *InMemoryIndex {
+func InMemoryIndexFromIndex(index *indexes.Index) *InMemoryIndex {
 	return &InMemoryIndex{
 		index: index,
 	}
@@ -23,7 +24,7 @@ func InMemoryIndexFromFile(filePath string) *InMemoryIndex {
 	}
 }
 
-func (index *InMemoryIndex) GetPostingListsForTerms(terms []string) map[string]PostingList {
+func (index *InMemoryIndex) GetPostingListsForTerms(terms []string) map[string]indexes.PostingList {
 	postingListsForTerms := make(map[string]PostingList)
 	for _, term := range terms {
 		postingListsForTerms[term] = index.index.postingLists[term]
