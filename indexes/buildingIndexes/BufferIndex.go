@@ -39,7 +39,7 @@ func (buffer *BufferIndex) AddDocToTerm(docID int, term string) {
 func (buffer *BufferIndex) AddDocToIndex(docID int, docPath string) {
 	buffer.docCounter++
 	if buffer.currentSize >= buffer.bufferSize && buffer.bufferSize != -1 { // NB: This is a very important decision for the system. Using the biggest posting list might not be the best one.
-		buffer.writeBiggestPostingList()
+		buffer.WriteBiggestPostingList()
 	}
 	buffer.index.AddDocToIndex(docID, docPath)
 }
