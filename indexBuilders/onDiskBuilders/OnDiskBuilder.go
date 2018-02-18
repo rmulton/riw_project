@@ -3,6 +3,7 @@ package onDiskBuilders
 // TODO: Add folders handler
 import (
 	"github.com/rmulton/riw_project/indexes/buildingIndexes"
+	"github.com/rmulton/riw_project/indexes/requestableIndexes"
 	"github.com/rmulton/riw_project/indexBuilders"
 	"sync"
 	"os"
@@ -58,7 +59,7 @@ func (builder *OnDiskBuilder) Build() {
  
 // GetIndex returns a OnDiskIndexFromFolder that uses the posting lists from ./saved to respond queries
 func (builder *OnDiskBuilder) GetIndex() requestableIndexes.RequestableIndex {
-	return indexes.OnDiskIndexFromFolder("./saved/")
+	return requestableIndexes.OnDiskIndexFromFolder("./saved/")
 }
 
 // finish handles:
@@ -66,9 +67,9 @@ func (builder *OnDiskBuilder) GetIndex() requestableIndexes.RequestableIndex {
 //    - writing the docID to path map
 func (builder *OnDiskBuilder) finish() {
 	// Write the docID to path map
-	go builder.index.writeDocIDToFilePath("./saved/meta/idToPath")
+	go builder.index.WriteDocIDToFilePath("./saved/meta/idToPath")
 	// Find out which terms are in memory, on disk or both
-	onDiskOnly, inMemoryOnly, onDiskAndInMemory := builder.index.categorizeTerms()
+	onDiskOnly, inMemoryOnly, onDiskAndInMemory := builder.index.CategorizeTerms()
 	// Get from frequency scores to tf-idf
 	var wg sync.WaitGroup
 	wg.Add(3)

@@ -84,7 +84,7 @@ func (buffer *BufferIndex) appendToTermFile(postingList indexes.PostingList, ter
 	buffer.writingChannel <- bufferPostingList
 }
 
-func (buffer *BufferIndex) writePostingListForTerms(terms map[string]bool) {
+func (buffer *BufferIndex) WritePostingListForTerms(terms map[string]bool) {
 	for term, _ := range terms {
 		postingList, exists := buffer.index.GetPostingListForTerm(term)
 		if !exists {
@@ -121,7 +121,7 @@ func (buffer *BufferIndex) getPostingListForTerm(term string) (indexes.PostingLi
 
 /* Find out which terms are in memory, on disk or both */
 
-func (buffer *BufferIndex) categorizeTerms() (map[string]bool, map[string]bool, map[string]bool) {
+func (buffer *BufferIndex) CategorizeTerms() (map[string]bool, map[string]bool, map[string]bool) {
 	onDiskTerms := getOnDiskTerms()
 	inMemoryTerms := buffer.getInMemoryTerms()
 	onDiskOnly, inMemoryOnly, onDiskAndInMemory := separate(onDiskTerms, inMemoryTerms)
