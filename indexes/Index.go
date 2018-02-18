@@ -24,8 +24,13 @@ func (index *Index) GetPostingLists() map[string]PostingList {
 	return index.postingLists
 }
 
-func (index *Index) GetPostingListForTerm(term string) PostingList {
-	return index.postingLists[term]
+func (index *Index) GetPostingListForTerm(term string) (PostingList, bool) {
+	postingList, exists := index.postingLists[term]
+	return postingList, exists
+}
+
+func (index *Index) SetPostingListForTerm(postingList PostingList, term string) {
+	index.postingLists[term] = postingList
 }
 
 func (index *Index) GetDocIDToFilePath() map[int]string {

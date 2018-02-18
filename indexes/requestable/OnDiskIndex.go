@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"log"
 	"github.com/rmulton/riw_project/utils"
+	"github.com/rmulton/riw_project/indexes"
 )
 type OnDiskIndex struct {
 	folderPath string
-	index *Index
+	index *indexes.Index
 }
 
 // Only for indexes persisted to disk
@@ -18,11 +19,7 @@ func OnDiskIndexFromFolder(folderPath string) *OnDiskIndex {
 	if err != nil {
 		log.Println("Error while building the index from on disk files: %v", err)
 	}
-	postingLists := make(map[string]PostingList)
-	index := &Index{
-		postingLists: postingLists,
-		docIDToFilePath: docIDToFilePath,
-	}
+	index := indexes.NewEmptyIndex()
 	return &OnDiskIndex{
 		folderPath: folderPath,
 		index: index,
@@ -31,22 +28,20 @@ func OnDiskIndexFromFolder(folderPath string) *OnDiskIndex {
 
 func (odi *OnDiskIndex) loadTerm(term string) error {
 	termFile := fmt.Sprintf("./saved/postings/%s", term)
-	_, exists := odi.index.postingLists[term]
+	_, exists := odi.index.GetPostingListForTerm(term)
 	if !exists {
-		err, postingList := PostingListFromFile(termFile)	
+		err, postingList := indexes.PostingListFromFile(termFile)	
 		if err != nil {
 			return err
 		}
-		odi.index.postingLists[term] = postingList
+		odi.index.SetPostingListForTerm(postingList, term)
 	}
 	return nil
 }
 
 // TODO: make it safe
 func (odi *OnDiskIndex) unloadTerm(term string) {
-	// TODO: check which one is the most efficient
-	delete(odi.index.postingLists, term)
-	// odi.index.postingLists[term] = nil
+	odi.index.ClearPostingListFor(term)
 }
 
 func (odi *OnDiskIndex) GetPostingListsForTerms(terms []string) map[string]PostingList {
