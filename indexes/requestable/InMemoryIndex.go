@@ -14,7 +14,7 @@ func InMemoryIndexFromIndex(index *indexes.Index) *InMemoryIndex {
 	}
 }
 func InMemoryIndexFromFile(filePath string) *InMemoryIndex {
-	index := NewEmptyIndex()
+	index := indexes.NewEmptyIndex()
 	err := utils.ReadGob("./saved/index.gob", &index)
 	if err != nil {
 		log.Println(err)
@@ -25,13 +25,14 @@ func InMemoryIndexFromFile(filePath string) *InMemoryIndex {
 }
 
 func (index *InMemoryIndex) GetPostingListsForTerms(terms []string) map[string]indexes.PostingList {
-	postingListsForTerms := make(map[string]PostingList)
+	postingListsForTerms := make(map[string]indexes.PostingList)
 	for _, term := range terms {
-		postingListsForTerms[term] = index.index.postingLists[term]
+		postingList, _ := index.index.GetPostingListForTerm(term)
+		postingListsForTerms[term] = postingList
 	}
 	return postingListsForTerms
 }
 
 func (index *InMemoryIndex) GetDocIDToPath() map[int]string {
-	return index.index.docIDToFilePath
+	return index.index.GetDocIDToFilePath()
 }
