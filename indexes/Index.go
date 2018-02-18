@@ -87,3 +87,7 @@ func (index *Index) ClearPostingListFor(term string) {
 	// emptyPostingList := make(PostingList)
 	// index.postingLists[term] = emptyPostingList
 }
+
+func (index *Index) GetDocCounter() int {
+	return len(index.docIDToFilePath)
+}
