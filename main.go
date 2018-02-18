@@ -2,17 +2,17 @@ package main
 
 import (
 	"sync"
-	"./readers"
-	"./indexBuilders"
+	"github.com/rmulton/riw_project/readers"
+	"github.com/rmulton/riw_project/indexBuilders"
 	"log"
 	"time"
 	"bufio"
 	"os"
 	"fmt"
 	"flag"
-	"./indexes"
-	"./requests"
-	"./utils"
+	"github.com/rmulton/riw_project/indexes"
+	"github.com/rmulton/riw_project/requests"
+	"github.com/rmulton/riw_project/utils"
 )
 
 func readInput(helpMessage string) string {
