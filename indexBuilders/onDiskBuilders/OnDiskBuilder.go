@@ -3,6 +3,7 @@ package onDiskBuilders
 // TODO: Add folders handler
 import (
 	"github.com/rmulton/riw_project/indexes/buildingIndexes"
+	"github.com/rmulton/riw_project/indexBuilders"
 	"sync"
 	"os"
 	"log"
@@ -25,7 +26,7 @@ type OnDiskBuilder struct {
 // NewOnDiskBuilder creates a OnDiskBuilder
 func NewOnDiskBuilder(bufferSize int, readingChannel indexes.ReadingChannel, routines int, parentWaitGroup *sync.WaitGroup) *OnDiskBuilder {
 	writingChannel := make(indexes.WritingChannel)
-	index := indexes.NewBufferIndex(bufferSize, writingChannel)
+	index := buildingIndexes.NewBufferIndex(bufferSize, writingChannel)
 	return &OnDiskBuilder{
 		index: index,
 		bufferSize: bufferSize,
@@ -56,7 +57,7 @@ func (builder *OnDiskBuilder) Build() {
 }
  
 // GetIndex returns a OnDiskIndexFromFolder that uses the posting lists from ./saved to respond queries
-func (builder *OnDiskBuilder) GetIndex() indexes.RequestableIndex {
+func (builder *OnDiskBuilder) GetIndex() requestableIndexes.RequestableIndex {
 	return indexes.OnDiskIndexFromFolder("./saved/")
 }
 

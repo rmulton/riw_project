@@ -168,3 +168,7 @@ func separate(first map[string]bool, second map[string]bool) (map[string]bool, m
 	}
 	return onlyFirst, onlySecond, both
 }
+
+func (buffer *BufferIndex) GetDocCounter() int {
+	return buffer.docCounter
+}

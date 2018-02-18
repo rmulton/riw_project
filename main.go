@@ -92,7 +92,7 @@ func buildIndex(dataFolder string, collection string, inMemoryIndex bool) reques
 	return builder.GetIndex()
 }
 
-func loadIndexFromDisk() indexes.RequestableIndex {
+func loadIndexFromDisk() requestableIndexes.RequestableIndex {
 	if utils.CheckPathExists("./saved/postings/") && utils.CheckPathExists("./saved/meta/idToPath") {
 		index := requestableIndexes.OnDiskIndexFromFolder("./saved/")
 		fmt.Println("Loaded existing index")
