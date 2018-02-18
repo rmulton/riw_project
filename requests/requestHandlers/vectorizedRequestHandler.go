@@ -11,8 +11,8 @@ type vectorizedRequestHandler struct {
 }
 
 
-func NewVectorizedRequestHandler(index requestableIndexes.RequestableIndex) vectorizedRequestHandler {
-	return vectorizedRequestHandler{index}
+func NewVectorizedRequestHandler(index requestableIndexes.RequestableIndex) *vectorizedRequestHandler {
+	return &vectorizedRequestHandler{index}
 }
 
 func (reqHandler *vectorizedRequestHandler) Request(request string) *indexes.PostingList {

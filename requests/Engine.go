@@ -16,18 +16,18 @@ func NewEngine(index requestableIndexes.RequestableIndex, requestType string, ou
 	var requestHandler requestHandlers.RequestHandler
 	switch requestType {
 	case "and":
-		requestHandler = &requestHandlers.NewAndRequestHandler(index)
+		requestHandler = requestHandlers.NewAndRequestHandler(index)
 	case "binary":
-		requestHandler = &requestHandlers.NewBinaryRequestHandler(index)
+		requestHandler = requestHandlers.NewBinaryRequestHandler(index)
 	case "vectorial":
-		requestHandler = &requestHandlers.NewVectorizedRequestHandler(index)
+		requestHandler = requestHandlers.NewVectorizedRequestHandler(index)
 	}
 	var outputFormater outputFormaters.OutputFormater
 	switch outputType {
 	case "sorted":
-		outputFormater = &outputFormaters.NewSortDocsOutputFormater(index.GetDocIDToPath())
+		outputFormater = outputFormaters.NewSortDocsOutputFormater(index.GetDocIDToPath())
 	case "dumb":
-		outputFormater = &outputFormaters.NewDumbOutputFormater()
+		outputFormater = outputFormaters.NewDumbOutputFormater()
 	}
 	return &Engine{
 		index: index,
