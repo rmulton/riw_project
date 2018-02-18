@@ -70,7 +70,7 @@ func (reader *CACMReader) read(counter int, ID string, document string) {
 	// this is why we are using the counter as a unique identifier
 	docID, err := strconv.Atoi(ID)
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
 	// Get the usefull parts of the doc
 	var docContent string
