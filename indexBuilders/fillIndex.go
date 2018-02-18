@@ -3,7 +3,7 @@ package indexBuilders
 import (
 	"sync"
 	"log"
-	"github.com/rmulton/riw_project/indexes/building"
+	"github.com/rmulton/riw_project/indexes/buildingIndexes"
 )
 
 func fillIndex(index *building.BuildingIndex, readingChannel indexes.ReadingChannel, waitGroup *sync.WaitGroup) {
