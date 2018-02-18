@@ -65,13 +65,13 @@ func buildIndex(dataFolder string, collection string, inMemoryIndex bool) reques
 	// Clean "./saved" folder
 	var builder indexBuilders.IndexBuilder
 	if inMemoryIndex {
-		builder = onDiskBuilders.NewInMemoryBuilder(
+		builder = inMemoryBuilders.NewInMemoryBuilder(
 			readingChannel,
 			10,
 			&waitGroup,
 		)
 	} else {
-		builder = inMemoryBuilders.NewOnDiskBuilder(
+		builder = onDiskBuilders.NewOnDiskBuilder(
 			1000000000,
 			readingChannel,
 			10,
