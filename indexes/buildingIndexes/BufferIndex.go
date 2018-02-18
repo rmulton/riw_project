@@ -1,4 +1,4 @@
-package building
+package buildingIndexes
 
 import (
 	"github.com/rmulton/riw_project/utils"
@@ -69,7 +69,7 @@ func (buffer *BufferIndex) writeBiggestPostingList() {
 	buffer.appendToTermFile(longestPostingList, termWithLongestPostingList, false)
 }
 
-// TODO : avoid code repition by building buffer.appendPostingListOnDisk(term)
+// TODO : avoid code repition by buildingIndexes buffer.appendPostingListOnDisk(term)
 
 // Should be done by the buffer index instead
 func (buffer *BufferIndex) appendToTermFile(postingList indexes.PostingList, term string, replace bool) {

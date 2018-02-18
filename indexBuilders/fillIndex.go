@@ -6,7 +6,7 @@ import (
 	"github.com/rmulton/riw_project/indexes/buildingIndexes"
 )
 
-func fillIndex(index *building.BuildingIndex, readingChannel indexes.ReadingChannel, waitGroup *sync.WaitGroup) {
+func fillIndex(index *buildingIndexes.BuildingIndex, readingChannel indexes.ReadingChannel, waitGroup *sync.WaitGroup) {
 	defer waitGroup.Done()
 	for doc := range readingChannel {
 		// Add the path to the doc to the map

@@ -1,4 +1,4 @@
-package requestable
+package requestableIndexes
 
 import (
 	"fmt"

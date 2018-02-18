@@ -1,13 +1,13 @@
 package requests
 
 import (
-	"github.com/rmulton/riw_project/indexes/requestable"
+	"github.com/rmulton/riw_project/indexes/requestableIndexes"
 	"github.com/rmulton/riw_project/requests/requestHandlers"
 	"github.com/rmulton/riw_project/requests/outputFormaters"
 )
 
 type Engine struct {
-	index requestable.RequestableIndex
+	index requestableIndexes.RequestableIndex
 	requestHandler requestHandlers.RequestHandler
 	outputFormater outputFormaters.OutputFormater
 }
