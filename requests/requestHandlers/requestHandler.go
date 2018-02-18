@@ -1,4 +1,4 @@
-package requests
+package requestHandlers
 
 import (
 	"github.com/rmulton/riw_project/indexes"
