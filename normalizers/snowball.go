@@ -33,7 +33,7 @@ func normalizeWord(word string, stopWords []string) string {
 	if !contains(stopWords, word) {
 		stemed, err := snowball.Stem(word, "english", true)
 		if err != nil {
-			panic(err)
+			log.Println(err)
 		}
 		return stemed
 	}
