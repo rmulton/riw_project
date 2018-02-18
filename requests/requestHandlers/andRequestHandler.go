@@ -2,14 +2,15 @@ package requests
 
 import (
 	"github.com/rmulton/riw_project/indexes"
+	"github.com/rmulton/riw_project/indexes/requestableIndexes"
 	"github.com/rmulton/riw_project/normalizers"
 )
 
 type andRequestHandler struct {
-	index indexes.RequestableIndex
+	index requestableIndexes.RequestableIndex
 }
 
-func NewAndRequestHandler(index indexes.RequestableIndex) *andRequestHandler {
+func NewAndRequestHandler(index requestableIndexes.RequestableIndex) *andRequestHandler {
 	return &andRequestHandler{index}
 }
 

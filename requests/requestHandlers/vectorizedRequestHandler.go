@@ -2,15 +2,16 @@ package requests
 
 import (
 	"github.com/rmulton/riw_project/indexes"
+	"github.com/rmulton/riw_project/indexes/requestableIndexes"
 	"github.com/rmulton/riw_project/normalizers"
 )
 
 type vectorizedRequestHandler struct {
-	index indexes.RequestableIndex
+	index requestableIndexes.RequestableIndex
 }
 
 
-func NewVectorizedRequestHandler(index indexes.RequestableIndex) *vectorizedRequestHandler {
+func NewVectorizedRequestHandler(index requestableIndexes.RequestableIndex) *vectorizedRequestHandler {
 	return &vectorizedRequestHandler{index}
 }
 

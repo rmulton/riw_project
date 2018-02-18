@@ -3,10 +3,11 @@ package indexBuilders
 import (
 	"sync"
 	"log"
+	"github.com/rmulton/riw_project/indexes"
 	"github.com/rmulton/riw_project/indexes/buildingIndexes"
 )
 
-func fillIndex(index *buildingIndexes.BuildingIndex, readingChannel indexes.ReadingChannel, waitGroup *sync.WaitGroup) {
+func fillIndex(index buildingIndexes.BuildingIndex, readingChannel indexes.ReadingChannel, waitGroup *sync.WaitGroup) {
 	defer waitGroup.Done()
 	for doc := range readingChannel {
 		// Add the path to the doc to the map
@@ -17,5 +18,5 @@ func fillIndex(index *buildingIndexes.BuildingIndex, readingChannel indexes.Read
 			index.AddDocToTerm(doc.ID, term)
 		}
 	}
-	log.Printf("Done getting %d documents", index.docCounter)
+	log.Printf("Done getting %d documents", index.GetDocCounter())
 }

@@ -3,15 +3,16 @@ package requests
 import (
 	"strings"
 	"github.com/rmulton/riw_project/indexes"
+	"github.com/rmulton/riw_project/indexes/requestableIndexes"
 	"github.com/rmulton/riw_project/normalizers"
 )
 
 type binaryRequestHandler struct {
-	index indexes.RequestableIndex
+	index requestableIndexes.RequestableIndex
 
 }
 
-func NewBinaryRequestHandler(index indexes.RequestableIndex) *binaryRequestHandler {
+func NewBinaryRequestHandler(index requestableIndexes.RequestableIndex) *binaryRequestHandler {
 	return &binaryRequestHandler{index}
 }
 
