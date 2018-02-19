@@ -6,9 +6,10 @@ import (
 	"github.com/kljensen/snowball"
 )
 
+var wordRegex = regexp.MustCompile(`[a-zA-Z0-9_#&%@\-\.]*`) // avoids having dots or slashes at the begining or the end of the name of the file
+
 // Get a normalized token list from a string
 func Normalize(paragraph string, stopwords []string) []string {
-	wordRegex := regexp.MustCompile("[A-z0-9][A-z0-9\\.\\_\\/]+[A-z0-9]") // avoids having dots or slashes at the begining or the end of the name of the file
 	tokens := wordRegex.FindAllString(paragraph, -1)
 
 	return normalizeWords(tokens, stopwords)
@@ -28,15 +29,14 @@ func normalizeWords(words []string, stopWords []string) []string {
 
 // normalizeWord normalizes a single word
 func normalizeWord(word string, stopWords []string) string {
-	if !contains(stopWords, word) {
+	if !contains(stopWords, word) && !onlyDots(word){
 		stemed, err := snowball.Stem(word, "english", true)
 		if err != nil {
 			log.Println(err)
 		}
 		return stemed
 	}
-	empty := ""
-	return empty
+	return ""
 }
 
 func contains(list []string, element string) bool {
@@ -46,4 +46,13 @@ func contains(list []string, element string) bool {
 		}
 	}
 	return false
+}
+
+func onlyDots(word string) bool {
+	for _, caracter := range word {
+		if caracter != 46 { // dot's code
+			return false
+		}
+	}
+	return true
 }
