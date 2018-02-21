@@ -2,17 +2,19 @@
 Project done during Céline Hudelot class on Information Retrieval.
 
 # Installation
-Clone this repository:
-```git clone https://github.com/rmulton/riw_project```
+```
+// Clone this repository
+git clone https://github.com/rmulton/riw_project
+// Move to the folder
+cd riw_project
+// Build the application
+go build
+// Run the program
+./riw_project -build_for <path_to_collection> -collection <collection_type>
+```
 
-Move to the folder:
-```cd riw_project```
 
-Build the application:
-```go build```
 
-Run the program:
-```./riw_project -build_for <path_to_collection> -collection <collection_type>```
 
 
 # Design
