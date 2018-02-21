@@ -2,7 +2,7 @@
 Project done during Céline Hudelot class on Information Retrieval.
 
 # Installation
-```
+```bash
 // Clone this repository
 git clone https://github.com/rmulton/riw_project
 // Move to the folder
