@@ -2,56 +2,62 @@
 Project done during Céline Hudelot class on Information Retrieval.
 
 # Installation
+Clone this repository:
 ```git clone https://github.com/rmulton/riw_project```
 
+Move to the folder:
 ```cd riw_project```
 
+Build the application:
 ```go build```
 
-```./riw_project -collection=cacm```
+Run the program:
+```./riw_project -build_for <path_to_collection> -collection <collection_type>```
+
 
 # Design
-NB : if the collection (not the index) cannot be held in memory, check if it would be more efficient to use BSBI.
-## Assumptions
-The priority is to have the fastest response to request time. (Which can harm the index building time).
-Any document of the collection can be held in memory.
-Compute data for the user asap.
+## Priority
+The main design choice of this program is that **the priority is to have the shortest response to request time**. A possible drawback could be a slower index building time.
 ## Use cases
-The goal of this project is to parse a collection of documents of any kind (for now only files), then build a reversed index to handle search request on the collection. It is designed to be used in three cases :
-
+The goal of this project is to parse a collection of documents of any kind, then build a reversed index to handle search request on the collection. Three use cases are considered:
 1. The index can be held in memory
 2. The index cannot be held in memory
-3. The index is filled and requested on a distributed network
+3. The index cannot be held on one machine (not implemented)
 
 ### 1. The index can be held in memory
-This is the most simple case. There is no need to persist intermediary results. The program fills the index while reading the collection, then the index is available for requests. It is the case for stanford or CACM collection on a machine that has 4 or 8GB of memory.
+This is the most simple use case. There is no need to persist intermediate results. The program fills the index while reading the collection, then the index is available to handle queries. For example, stanford or CACM collections can be indexed in this way on a machine that has 4 or 8GB of memory.
 
 ### 2. The index cannot be held in memory
-Since the index cannot be held in memory, we need to store it on the disk. In this case, we have chosen to store the postings list for each term in a separate file. This version is much slower since it needs to open, read and write a lot of files.
+Since the index cannot be completly held in memory, it needs to be stored on the disk. This version is slower since it needs to open, read and write a lot of files.
 
-The objective here, in order to reduce the time to have the index ready, is to reduce the number of time postings files are read, filled with new postings, then written. For this reason, we only move from the memory to the disk the current longest postings list when a postings lists buffer is full. 
+In order to reduce the index building time, it is necessary to reduce the number of time data is read or written.
 
+<!-- For this reason, we only move from the memory to the disk the current longest postings list when a postings lists buffer is full. 
 The limit would be a collection for which one term would have a posting list that would be impossible to be held in memory. In that case, we would have to break this file down into several files.
-
+NB : if the collection (not the index) cannot be held in memory, check if it would be more efficient to use BSBI.
 NB : 
 - Might be better to use the swap partition of the computer when possible.
 - It is almost a single-pass in-memory indexing. Compare the results with real single-pass in-memory indexing.
+- B+ tree ?
+- However, it might be more clever to use a distributed database system to avoid reinventing the wheel. Since we need all parsers to be able to write to the database at the same time, availability is required. Hence a A-P database system is required. A document-oriented database would suit this use case (SimpleDB for instance).
+ -->
+ ### 3. The index cannot be held on one machine (not implemented)
+Since the index cannot be held on one machine, it cannot be held on one machine, it needs to be stored on a distributed network. This version is slower than the previous because of the networking layer.
 
-### 3. The index is filled and requested on a distributed network (not implemented yet)
-In that case we need to have a machine that distributes documents to parse from a document queue. Then we also need a machine that merges postings lists sent from the machines that are parsing the documents.
-
-The previous system can be augmented to handle this case. However, it might be more clever to use a distributed database system to avoid reinventing the wheel.
-
-Since we need all parsers to be able to write to the database at the same time, availability is required. Hence a A-P database system is required. A document-oriented database would suit this use case (SimpleDB for instance).
+In order to reduce the index building time, it is necessary to reduce the quantity of data that needs to be sent through the network
+<!-- In this case, in addition to the components that have been previously discussed, we need:
+- a component that distributes documents to parse from a document queue
+- a component that merges intermediate results from the parsing machines -->
 
 # Architecture
-
+This project is organized in layers in order to keep different parts independant from each other. The data structures shared by all the program can be found in ./indexes.
+Data goes through a pipeline :
+Reader -[BufferPostingList]-> IndexBuilder -[Index]-> RequestHandler -[PostingList]-> OutputFormater
 ## Choices
 - Specific reading procedures for a collection is implemented in /parsers
 - Common calculation procedures to index the documents are handled in /indexes
 - Specific request parsing procedures are handled in /requests
 - Common calculation procedures to answer the request are handled in /engines
-
 ## /parsers
 A Parser handles reading and parsing procedure for a collection. It needs to send the parsed documents to the index builder through a channel. Channels are used and not Mutex so that a parser routine wouldn't be blocked waiting for the lock. See the parser interface.
 
