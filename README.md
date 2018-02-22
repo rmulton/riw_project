@@ -37,7 +37,7 @@ Since the index cannot be held on one machine, it cannot be held on one machine,
 
 In order to reduce the index building time, it is necessary to reduce the quantity of data that needs to be sent through the network
 
-# Implementation architecture
+# Implementation
 This project is organized in layers in order to keep different parts independant from each other. The data structures shared by all the program can be found in ./indexes.
 Data goes through a pipeline :
 Reader -[BufferPostingList]-> IndexBuilder -[Index]-> RequestHandler -[PostingList]-> OutputFormater
@@ -48,7 +48,9 @@ A Builder interface must be implemented in order to give the building procedure 
 - in memory builders: build the index in memory
 - on disk builders: use the hard disk to extend the maximum index size.
 
-NB: The current rule to use the hard disk is to give a maximum size to the index, then write the biggest posting list to the disk when the index's size exceed the maximum size.
+Note Bene:
+- The on disk builder implemented doesn't use Block Search Based Indexing (BSBI). Instead, in order to have a shorter querying time, the index is persisted in a document-based manner. Each term of the collection has a file that contains its posting list. This way, when querying the index, the program can load the smallest amount of data possible. When using BSBI, all the blocks that contain postings for the queried terms are loaded, resulting in a lot of unnecessary reading.
+- The current rule to use the hard disk is to give a maximum size to the index, then write the biggest posting list to the disk when the index's size exceed the maximum size.
 
 ## ./readers
 A Reader interface must be implemented in order to give the reading procedure of a collection. It sends parsed documents to the index builder through a channel.
@@ -63,6 +65,7 @@ This folder contains all the **data structures shared throughout this program**.
 - It is then used to fill a group of PostingList of a BuildingIndex
 - When the Index needs to write a PostingList because it is full, it sends it through the WritingChannel
 - When the user enter a request, accurate documents are found using a RequestableIndex. Then angle between the request and a given document is output in a VectorPostingList
+
 ## ./requests
 - A RequestHandler interface implementation gives a procedure to query a requestable index
 - An OutputFormater interface implementation gives a procedure to display a request's response to the user
@@ -83,20 +86,9 @@ Contains helper functions
 - Clear the current index saved in ./saved
 - Get the content of a file as a string
 
-
 # Further work
-- Compare persisting maps with persisting tuples or binaries that represent the posting lists and use an index
-- Write the distributed version (separate the writer from the index builder; add the network layer)
-# Discussion
-<!-- For this reason, we only move from the memory to the disk the current longest postings list when a postings lists buffer is full. 
-The limit would be a collection for which one term would have a posting list that would be impossible to be held in memory. In that case, we would have to break this file down into several files.
-NB : if the collection (not the index) cannot be held in memory, check if it would be more efficient to use BSBI.
-NB : 
-- Might be better to use the swap partition of the computer when possible.
-- It is almost a single-pass in-memory indexing. Compare the results with real single-pass in-memory indexing.
-- B+ tree ?
-- However, it might be more clever to use a distributed database system to avoid reinventing the wheel. Since we need all parsers to be able to write to the database at the same time, availability is required. Hence a A-P database system is required. A document-oriented database would suit this use case (SimpleDB for instance).
- -->
-<!-- In this case, in addition to the components that have been previously discussed, we need:
-- a component that distributes documents to parse from a document queue
-- a component that merges intermediate results from the parsing machines -->
+- Compare maps with tuples or binaries to represent the posting lists
+- Write the distributed version (separate the writer from the index builder, add the networking layer)
+- Compare performance using B+ trees instead of Document-oriented data structure
+- Compare writing the biggest posting list when a BufferIndex has exceeded its maximum size with other heuristics to choose what to write
+- Extend PostingList to allow posting lists that cannot be held in memory
