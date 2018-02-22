@@ -1,4 +1,4 @@
-# Golang information retrieval engine
+# Information retrieval engine
 Project done during Céline Hudelot class on Information Retrieval.
 
 # Installation
@@ -13,14 +13,11 @@ go build
 ./riw_project -build_for <path_to_collection> -collection <collection_type>
 ```
 
-
-
-
-
 # Design
-## Priority
-The main design choice of this program is that **the priority is to have the shortest response to request time**. A possible drawback could be a slower index building time.
-## Use cases
+## Priorities
+The main priority of this program is to have **the shortest response to request time**. A possible drawback could be a slower index building time.
+The second priority is to **allow the user to easily extend the program**.
+## Target use cases
 The goal of this project is to parse a collection of documents of any kind, then build a reversed index to handle search request on the collection. Three use cases are considered:
 1. The index can be held in memory
 2. The index cannot be held in memory
@@ -34,6 +31,53 @@ Since the index cannot be completly held in memory, it needs to be stored on the
 
 In order to reduce the index building time, it is necessary to reduce the number of time data is read or written.
 
+ ### 3. The index cannot be held on one machine (not implemented)
+Since the index cannot be held on one machine, it cannot be held on one machine, it needs to be stored on a distributed network. This version is slower than the previous because of the networking layer.
+
+In order to reduce the index building time, it is necessary to reduce the quantity of data that needs to be sent through the network
+
+# Implementation architecture
+This project is organized in layers in order to keep different parts independant from each other. The data structures shared by all the program can be found in ./indexes.
+Data goes through a pipeline :
+Reader -[BufferPostingList]-> IndexBuilder -[Index]-> RequestHandler -[PostingList]-> OutputFormater
+## Structure
+## ./indexBuilders
+A Builder interface must be implemented in order to give the building procedure for an index. The builders currently implemented are:
+- in memory builders: build the index in memory
+- on disk builders: use the hard disk to extend the maximum index size
+## ./readers
+A Reader interface must be implemented in order to give the reading procedure of a collection. It sends parsed documents to the index builder through a channel.
+Channels are used here, not Mutexes, so that a parser routine wouldn't be blocked waiting for the lock. The readers implemented are :
+- cacm: specific to CACM documents collection
+- stanford: every file contained in the input folder is considered as a document
+## ./indexes
+This folder contains all the **data structures shared throughout this program**.
+
+## ./requests
+- A RequestHandler interface implementation gives a procedure to query a requestable index
+- An OutputFormater interface implementation gives a procedure to display a request's response to the user
+- The Engine structure is the interface between the command line and the querying procedure
+
+Implemented :
+- RequestHandler: binary, vectorized, and
+- OutputFormater: dumb, sort documents on score
+
+## ./normalizers
+- The Normalize(paragraph, stopList) function gives the procedure to normalize a paragraph
+
+## ./utils
+Contains helper functions
+- Read and write .gob files
+- Check whether a path correspond to a file or a folder
+- Clear a folder
+- Clear the current index saved in ./saved
+- Get the content of a file as a string
+
+
+# Further work
+- Compare persisting maps with persisting tuples or binaries that represent the posting lists and use an index
+- Write the distributed version (separate the writer from the index builder; add the network layer)
+# Discussion
 <!-- For this reason, we only move from the memory to the disk the current longest postings list when a postings lists buffer is full. 
 The limit would be a collection for which one term would have a posting list that would be impossible to be held in memory. In that case, we would have to break this file down into several files.
 NB : if the collection (not the index) cannot be held in memory, check if it would be more efficient to use BSBI.
@@ -43,54 +87,6 @@ NB :
 - B+ tree ?
 - However, it might be more clever to use a distributed database system to avoid reinventing the wheel. Since we need all parsers to be able to write to the database at the same time, availability is required. Hence a A-P database system is required. A document-oriented database would suit this use case (SimpleDB for instance).
  -->
- ### 3. The index cannot be held on one machine (not implemented)
-Since the index cannot be held on one machine, it cannot be held on one machine, it needs to be stored on a distributed network. This version is slower than the previous because of the networking layer.
-
-In order to reduce the index building time, it is necessary to reduce the quantity of data that needs to be sent through the network
 <!-- In this case, in addition to the components that have been previously discussed, we need:
 - a component that distributes documents to parse from a document queue
 - a component that merges intermediate results from the parsing machines -->
-
-# Architecture
-This project is organized in layers in order to keep different parts independant from each other. The data structures shared by all the program can be found in ./indexes.
-Data goes through a pipeline :
-Reader -[BufferPostingList]-> IndexBuilder -[Index]-> RequestHandler -[PostingList]-> OutputFormater
-## Choices
-- Specific reading procedures for a collection is implemented in /parsers
-- Common calculation procedures to index the documents are handled in /indexes
-- Specific request parsing procedures are handled in /requests
-- Common calculation procedures to answer the request are handled in /engines
-## /parsers
-A Parser handles reading and parsing procedure for a collection. It needs to send the parsed documents to the index builder through a channel. Channels are used and not Mutex so that a parser routine wouldn't be blocked waiting for the lock. See the parser interface.
-
-Implemented :
-- CACM
-- Stanford
-
-## /indexes
-An Index stores the parsed documents. When the index is finished, it applies a procedure to transform the postings lists to scores.
-
-Implemented :
-- TfIdf index : term frequency - inverse document frequency index
-
-## /requests
-A Request handles a certain kind of request. It takes a string input from the user and compute the output according to an Index.
-
-Implemented :
-- Binary requests : requests using "and" and "or" conditions
-- Vectorized requests : requests using the angle between the request and the documents
-
-## /engines
-An Engine stores an index and responds to requests with a sorted list of documents that correspond to the request.
-
-## /normalizers
-A Normalizer maps words with terms using NLP procedures.
-
-## /utils
-Utils contains functions to
-- Transform files to string
-- Read and write Gob files to persist golang structures
-
-# Further work
-- Compare persisting maps with persisting tuples or binaries that represent the posting lists and use an index
-- Write the distributed version (separate the writer from the index builder; add the network layer)
