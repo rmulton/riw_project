@@ -49,7 +49,7 @@ A Builder interface must be implemented in order to give the building procedure 
 - on disk builders: use the hard disk to extend the maximum index size.
 
 Note Bene:
-- The on disk builder implemented doesn't use Block Search Based Indexing (BSBI). Instead, in order to have a shorter querying time, the index is persisted in a document-based manner. Each term of the collection has a file that contains its posting list. This way, when querying the index, the program can load the smallest amount of data possible. When using BSBI, all the blocks that contain postings for the queried terms are loaded, resulting in a lot of unnecessary reading.
+- The on disk builder implemented doesn't use Block Search Based Indexing (BSBI). Instead, in order to have a shorter querying time, the index is persisted in a document-based manner. Each term of the collection has a file that contains its posting list. This way, when querying the index, the program only has to load necessary data. When using BSBI, all the blocks that contain postings for the queried terms are loaded, resulting in the program loading a lot of useless data.
 - The current rule to use the hard disk is to give a maximum size to the index, then write the biggest posting list to the disk when the index's size exceed the maximum size.
 
 ## ./readers
