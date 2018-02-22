@@ -17,6 +17,7 @@ go build
 ## Priorities
 The main priority of this program is to have **the shortest response to request time**. A possible drawback could be a slower index building time.
 The second priority is to **allow the user to easily extend the program**.
+
 ## Target use cases
 The goal of this project is to parse a collection of documents of any kind, then build a reversed index to handle search request on the collection. Three use cases are considered:
 1. The index can be held in memory
@@ -31,7 +32,7 @@ Since the index cannot be completly held in memory, it needs to be stored on the
 
 In order to reduce the index building time, it is necessary to reduce the number of time data is read or written.
 
- ### 3. The index cannot be held on one machine (not implemented)
+### 3. The index cannot be held on one machine (not implemented)
 Since the index cannot be held on one machine, it cannot be held on one machine, it needs to be stored on a distributed network. This version is slower than the previous because of the networking layer.
 
 In order to reduce the index building time, it is necessary to reduce the quantity of data that needs to be sent through the network
@@ -40,19 +41,28 @@ In order to reduce the index building time, it is necessary to reduce the quanti
 This project is organized in layers in order to keep different parts independant from each other. The data structures shared by all the program can be found in ./indexes.
 Data goes through a pipeline :
 Reader -[BufferPostingList]-> IndexBuilder -[Index]-> RequestHandler -[PostingList]-> OutputFormater
+
 ## Structure
 ## ./indexBuilders
 A Builder interface must be implemented in order to give the building procedure for an index. The builders currently implemented are:
 - in memory builders: build the index in memory
-- on disk builders: use the hard disk to extend the maximum index size
+- on disk builders: use the hard disk to extend the maximum index size.
+
+NB: The current rule to use the hard disk is to give a maximum size to the index, then write the biggest posting list to the disk when the index's size exceed the maximum size.
+
 ## ./readers
 A Reader interface must be implemented in order to give the reading procedure of a collection. It sends parsed documents to the index builder through a channel.
 Channels are used here, not Mutexes, so that a parser routine wouldn't be blocked waiting for the lock. The readers implemented are :
 - cacm: specific to CACM documents collection
 - stanford: every file contained in the input folder is considered as a document
+
 ## ./indexes
 This folder contains all the **data structures shared throughout this program**.
-
+- PostingList is the core data structure of this program. It stores a document id to document score map
+- A document parsed by a reader is sent as a Document through a ReadingChannel
+- It is then used to fill a group of PostingList of a BuildingIndex
+- When the Index needs to write a PostingList because it is full, it sends it through the WritingChannel
+- When the user enter a request, accurate documents are found using a RequestableIndex. Then angle between the request and a given document is output in a VectorPostingList
 ## ./requests
 - A RequestHandler interface implementation gives a procedure to query a requestable index
 - An OutputFormater interface implementation gives a procedure to display a request's response to the user
