@@ -13,6 +13,8 @@ go build
 ./riw_project -build_for <path_to_collection> -collection <collection_type>
 ```
 
+You are good to go ! If you need data to test the program, you can try the example collection from CS276 class at stanford [here](http://web.stanford.edu/class/cs276/pa/pa1-data.zip)
+
 # Design
 ## Priorities
 The main priority of this program is to have **the shortest response to request time**. A possible drawback could be a slower index building time.
