@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 	"math"
-	"github.com/rmulton/riw_project/indexBuilders"
+	"github.com/rmulton/riw_project/indexBuilders/inMemoryBuilders"
 	"github.com/rmulton/riw_project/indexes"
 )
 
@@ -77,7 +77,7 @@ func TestAndRequestHandler(t *testing.T) {
 	// TODO: check how to avoid duplicate code with ./indexBuilders
 	readingChan := make(indexes.ReadingChannel)
 	var wg sync.WaitGroup
-	var builder = indexBuilders.NewInMemoryBuilder(readingChan, 2, &wg)
+	var builder = inMemoryBuilders.NewInMemoryBuilder(readingChan, 2, &wg)
 	wg.Add(1)
 	go builder.Build()
 	for _, doc := range testInMemSomeDocuments {
