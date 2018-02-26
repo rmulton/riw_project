@@ -94,3 +94,6 @@ Contains helper functions
 - Compare performance using B+ trees instead of Document-oriented data structure
 - Compare writing the biggest posting list when a BufferIndex has exceeded its maximum size with other heuristics to choose what to write
 - Extend PostingList to allow posting lists that cannot be held in memory
+
+# Known bugs
+- Sometimes the tests for OnDiskBuilder doesn't pass (sending on closed channel error)
