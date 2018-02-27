@@ -13,7 +13,7 @@ go build
 ./riw_project -build_for <path_to_collection> -collection <collection_type>
 ```
 
-You are good to go ! If you need data to test the program, you can try the example collection from Stanford's CS276 class [here](http://web.stanford.edu/class/cs276/pa/pa1-data.zip).
+You are good to go ! If you need data to test the program, you can try the example collection from Stanford's CS276 class [here](http://web.stanford.edu/class/cs276/pa/pa1-data.zip) or CACM's one [here](http://ir.dcs.gla.ac.uk/resources/test_collections/cacm/).
 
 # Design
 ## Priorities
