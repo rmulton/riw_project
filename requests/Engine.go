@@ -1,13 +1,16 @@
 package requests
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/rmulton/riw_project/indexes/requestableIndexes"
-	"github.com/rmulton/riw_project/requests/requestHandlers"
 	"github.com/rmulton/riw_project/requests/outputFormaters"
+	"github.com/rmulton/riw_project/requests/requestHandlers"
 )
 
 type Engine struct {
-	index requestableIndexes.RequestableIndex
+	index          requestableIndexes.RequestableIndex
 	requestHandler requestHandlers.RequestHandler
 	outputFormater outputFormaters.OutputFormater
 }
@@ -30,14 +33,17 @@ func NewEngine(index requestableIndexes.RequestableIndex, requestType string, ou
 		outputFormater = outputFormaters.NewDumbOutputFormater()
 	}
 	return &Engine{
-		index: index,
+		index:          index,
 		requestHandler: requestHandler,
 		outputFormater: outputFormater,
 	}
 }
 
-func (engine *Engine) Request (request string) {
+func (engine *Engine) Request(request string) {
+	start := time.Now()
 	res := engine.requestHandler.Request(request)
+	done := time.Now()
+	elapsed := done.Sub(start)
+	fmt.Printf("> Done computing the response to the request in %v", elapsed)
 	engine.outputFormater.Output(res)
 }
-

@@ -1,19 +1,20 @@
 package main
 
 import (
-	"sync"
-	"github.com/rmulton/riw_project/readers"
-	"github.com/rmulton/riw_project/indexBuilders"
-	"github.com/rmulton/riw_project/indexBuilders/onDiskBuilders"
-	"github.com/rmulton/riw_project/indexBuilders/inMemoryBuilders"
-	"log"
-	"time"
 	"bufio"
-	"os"
-	"fmt"
 	"flag"
+	"fmt"
+	"log"
+	"os"
+	"sync"
+	"time"
+
+	"github.com/rmulton/riw_project/indexBuilders"
+	"github.com/rmulton/riw_project/indexBuilders/inMemoryBuilders"
+	"github.com/rmulton/riw_project/indexBuilders/onDiskBuilders"
 	"github.com/rmulton/riw_project/indexes"
 	"github.com/rmulton/riw_project/indexes/requestableIndexes"
+	"github.com/rmulton/riw_project/readers"
 	"github.com/rmulton/riw_project/requests"
 	"github.com/rmulton/riw_project/utils"
 )
@@ -45,21 +46,21 @@ func buildIndex(dataFolder string, collection string, inMemoryIndex bool) reques
 	var waitGroup sync.WaitGroup
 	var reader readers.Reader
 	readingChannel := make(indexes.ReadingChannel)
-	if collection=="stanford" {
+	if collection == "stanford" {
 		reader = readers.NewStanfordReader(
 			readingChannel,
 			dataFolder,
 			10,
 			&waitGroup,
 		)
-		
+
 	} else {
 		reader = readers.NewCACMReader(
 			readingChannel,
 			dataFolder,
 			5,
 			&waitGroup,
-			)
+		)
 	}
 	// Create the builder
 	// Clean "./saved" folder
@@ -76,7 +77,7 @@ func buildIndex(dataFolder string, collection string, inMemoryIndex bool) reques
 			readingChannel,
 			10,
 			&waitGroup,
-			)
+		)
 	}
 	// Build the index
 	log.Printf("Building an index for the %s collection using data from %s\n", collection, dataFolder)
@@ -98,7 +99,7 @@ func loadIndexFromDisk() requestableIndexes.RequestableIndex {
 		fmt.Println("Loaded existing index")
 		return index
 	} else {
-		return nil	
+		return nil
 	}
 }
 
@@ -120,13 +121,13 @@ func getFlags() (string, bool, string, string, bool) {
 
 	// Check the command line arguments
 	// Check that the chosen collection's reader is implemented
-	for !(collection=="stanford" || collection=="cacm") {
+	for !(collection == "stanford" || collection == "cacm") {
 		collectionDoesNotExistMsg := fmt.Sprintf("The reader for the collection %s is not implemented. Implement it or choose one of the following collection:\n - stanford\n - cacm\n>> Please enter a collection: ", collection)
 		collection = readInput(collectionDoesNotExistMsg)
 	}
 
 	// Check that the chosen requestType is implemented
-	for !(requestType=="binary" || requestType=="vectorial") {
+	for !(requestType == "binary" || requestType == "vectorial") {
 		requestTypeDoesNotExistMsg := fmt.Sprintf("The request type %s is not implemented. Implement it or choose one of the following request type:\n - binary\n - vectorial\n>> Please enter a request type: ", collection)
 		requestType = readInput(requestTypeDoesNotExistMsg)
 	}
@@ -136,22 +137,24 @@ func getFlags() (string, bool, string, string, bool) {
 
 func main() {
 
+	log.Println("lala")
+
 	// Get the command line interface arguments
 	dataFolder, inMemoryIndex, collection, requestType, fromScratch := getFlags()
 
 	// Creating the index
 	var index requestableIndexes.RequestableIndex
 	// If the from scratch option is set to true, erase everything in "./saved/meta" and "./saved/postings"
-	if fromScratch && dataFolder==""{
+	if fromScratch && dataFolder == "" {
 		utils.ClearOrCreatePersistedIndex("./saved")
 	}
 	// If no dataFolder is given as a flag, try loading the index from "./saved"
-	if dataFolder=="" {
+	if dataFolder == "" {
 		// Load the index
 		index = loadIndexFromDisk()
 		// If empty, a folder to build the index from is required
-		if index==nil {
-			for dataFolder=="" {
+		if index == nil {
+			for dataFolder == "" {
 				dataFolder = readInput("No index can be found in memory. We need a folder to build an index from.\n>> Please input a path to the folder you want to build the index from: ")
 			}
 		}
@@ -159,10 +162,10 @@ func main() {
 
 	// If a dataFolder is given as a flag, build the index for it
 	// TODO: for cacm, return an error if the folder doesn't have the accurate format
-	if dataFolder!="" {
+	if dataFolder != "" {
 		index = buildIndex(dataFolder, collection, inMemoryIndex)
 	}
-			
+
 	// Load the request engine
 	engine := requests.NewEngine(index, requestType, "sorted")
 

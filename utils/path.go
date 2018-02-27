@@ -1,14 +1,13 @@
 package utils
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
-	"fmt"
 )
 
-// NB: it is often faster to pass by value rather than difference in golang
-//FileToString gets the content of a file as a string
+// FileToString gets the content of a file as a string
 func FileToString(filePath string) string {
 	dat, err := ioutil.ReadFile(filePath)
 	if err != nil {
@@ -21,11 +20,11 @@ func FileToString(filePath string) string {
 // ClearFolder clears a folder's content
 func ClearFolder(folderPath string) {
 	err := os.RemoveAll(folderPath)
-	if err!=nil{
+	if err != nil {
 		fmt.Println(err)
 	}
-	err = os.MkdirAll(folderPath,0666)
-	if err!=nil{
+	err = os.MkdirAll(folderPath, 0644)
+	if err != nil {
 		fmt.Println(err)
 	}
 }
@@ -34,22 +33,23 @@ func ClearFolder(folderPath string) {
 func CheckPathExists(path string) bool {
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {
+		fmt.Println(err)
 		return false
 	}
 	return true
 }
 
-// ClearPersistedIndex clears a persisted index as structured in this project:
+// ClearOrCreatePersistedIndex clears a persisted index as structured in this project:
 // ./saved/postings/ and ./saved/meta/
 func ClearOrCreatePersistedIndex(indexPath string) {
 	fmt.Println("Clearing the previous index saved on the disk")
 	ClearFolder(indexPath)
-	err := os.MkdirAll(fmt.Sprintf("%s/postings", indexPath), 0666)
-	if err!=nil{
+	err := os.MkdirAll(fmt.Sprintf("%s/postings", indexPath), 0644)
+	if err != nil {
 		fmt.Println(err)
 	}
-	err = os.MkdirAll(fmt.Sprintf("%s/meta", indexPath), 0666)
-	if err!=nil{
+	err = os.MkdirAll(fmt.Sprintf("%s/meta", indexPath), 0644)
+	if err != nil {
 		fmt.Println(err)
 	}
 }
