@@ -2,14 +2,15 @@ package onDiskBuilders
 
 // TODO: Add folders handler
 import (
+	"log"
+	"os"
+	"path/filepath"
+	"sync"
+
+	"github.com/rmulton/riw_project/indexBuilders"
+	"github.com/rmulton/riw_project/indexes"
 	"github.com/rmulton/riw_project/indexes/buildingIndexes"
 	"github.com/rmulton/riw_project/indexes/requestableIndexes"
-	"github.com/rmulton/riw_project/indexBuilders"
-	"sync"
-	"os"
-	"log"
-	"path/filepath"
-	"github.com/rmulton/riw_project/indexes"
 )
 
 // OnDiskBuilder handles
@@ -17,11 +18,11 @@ import (
 //    - feeding a buffer index with it
 //    - getting the index from frequency scores to tf-idf scores
 type OnDiskBuilder struct {
-	index *buildingIndexes.BufferIndex
+	index           *buildingIndexes.BufferIndex
 	parentWaitGroup *sync.WaitGroup
-	bufferSize int
-	readingChannel indexes.ReadingChannel
-	writingChannel indexes.WritingChannel
+	bufferSize      int
+	readingChannel  indexes.ReadingChannel
+	writingChannel  indexes.WritingChannel
 }
 
 // NewOnDiskBuilder creates a OnDiskBuilder
@@ -29,11 +30,11 @@ func NewOnDiskBuilder(bufferSize int, readingChannel indexes.ReadingChannel, rou
 	writingChannel := make(indexes.WritingChannel)
 	index := buildingIndexes.NewBufferIndex(bufferSize, writingChannel)
 	return &OnDiskBuilder{
-		index: index,
-		bufferSize: bufferSize,
+		index:           index,
+		bufferSize:      bufferSize,
 		parentWaitGroup: parentWaitGroup,
-		readingChannel: readingChannel,
-		writingChannel: writingChannel,
+		readingChannel:  readingChannel,
+		writingChannel:  writingChannel,
 	}
 }
 
@@ -56,7 +57,7 @@ func (builder *OnDiskBuilder) Build() {
 	wg.Wait()
 	log.Printf("Done filling with %d documents", builder.index.GetDocCounter())
 }
- 
+
 // GetIndex returns a OnDiskIndexFromFolder that uses the posting lists from ./saved to respond queries
 func (builder *OnDiskBuilder) GetIndex() requestableIndexes.RequestableIndex {
 	return requestableIndexes.OnDiskIndexFromFolder("./saved/")
@@ -96,16 +97,20 @@ func (builder *OnDiskBuilder) tfIdfOnDiskTerms(onDiskTerms map[string]bool, wait
 }
 
 func (builder *OnDiskBuilder) fileToTfIdfForTerms(terms map[string]bool) {
+	var waitGroup sync.WaitGroup
 	filepath.Walk("./saved/postings/", func(path string, info os.FileInfo, err error) error { // NB: according to the doc, Walk might not be the most efficient option
 		term := info.Name()
 		if !info.IsDir() && terms[term] == true {
-			go builder.fileToTfIdfForTerm(term, path)
+			waitGroup.Add(1)
+			go builder.fileToTfIdfForTerm(term, path, &waitGroup)
 		}
 		return nil
 	})
+	waitGroup.Wait()
 }
 
-func (builder *OnDiskBuilder) fileToTfIdfForTerm(term string, path string) {
+func (builder *OnDiskBuilder) fileToTfIdfForTerm(term string, path string, wg *sync.WaitGroup) {
+	defer wg.Done()
 	err, postingList := indexes.PostingListFromFile(path)
 	if err != nil {
 		log.Println(err)
@@ -115,7 +120,7 @@ func (builder *OnDiskBuilder) fileToTfIdfForTerm(term string, path string) {
 }
 
 // mergeDiskMemoryThenTfIdfTerms handles:
-//    - merging scores from disk and memory 
+//    - merging scores from disk and memory
 //    - getting from frequency scores to tf-idf
 //    - writing the resulting posting list to the disk
 func (builder *OnDiskBuilder) mergeDiskMemoryThenTfIdfTerms(toMergeThenTfIdf map[string]bool, waitGroup *sync.WaitGroup) {
@@ -128,7 +133,7 @@ func (builder *OnDiskBuilder) mergeDiskMemoryThenTfIdfTerms(toMergeThenTfIdf map
 func (builder *OnDiskBuilder) mergeDiskMemoryThenTfIdfTerm(term string) {
 	postingList, _ := builder.index.GetPostingListForTerm(term)
 	postingListSoFar := indexBuilders.CurrentPostingListOnDisk(term)
-	
+
 	// Here it is faster to load the persisted scores then get to tf-idf score rather than
 	// appending the score in memory to the file then use the functionnality to tf-idf a file
 	// even though it would use existing functionnalities. Maybe it would be wise to have a
