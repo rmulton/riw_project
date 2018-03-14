@@ -3,19 +3,18 @@ Project done during Céline Hudelot class on Information Retrieval.
 
 # Installation
 ## Program
-1. Install golang [here](https://golang.org/doc/install)
-2. Download the project
+1. [Install golang](https://golang.org/doc/install)
+2. Download and compile the project:
 ```sh
-# clone this repository
+# Download the project
 go get github.com/rmulton/riw_project
-# move to the folder
+# Move to the project's folder
 cd $GOPATH/github.com/rmulton/riw_project
-# build the application
+# Build the program
 go build
-# run the program
+# Run the program
 ./riw_project -build_for <path_to_collection> -collection <collection_type>
 ```
-3. You are good to go !
 
 ## Data
 If you need data to test the program, you can try the example collections
