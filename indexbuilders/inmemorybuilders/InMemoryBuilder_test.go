@@ -1,19 +1,17 @@
-package onDiskBuilders
+package inmemorybuilders
 
 import (
-	"os"
 	"reflect"
 	"sync"
 	"testing"
 
 	"github.com/rmulton/riw_project/indexes"
-	"github.com/rmulton/riw_project/utils"
 )
 
-var onDiskWaitGroup sync.WaitGroup
-var onDiskReadingChannel = make(indexes.ReadingChannel)
+var testInMemWaitGroup sync.WaitGroup
+var testInMemReadingChannel = make(chan indexes.Document)
 
-var someDocuments = []indexes.Document{
+var someDocuments2 = []indexes.Document{
 	indexes.Document{
 		ID:   0,
 		Path: "./mock_path/test.test",
@@ -139,7 +137,7 @@ var someDocuments = []indexes.Document{
 	},
 }
 
-var expectedPostingLists = map[string]indexes.PostingList{
+var expectedPostingLists2 = map[string]indexes.PostingList{
 	"blabla": indexes.PostingList{
 		0:    1,
 		12:   2,
@@ -190,7 +188,7 @@ var expectedPostingLists = map[string]indexes.PostingList{
 	},
 }
 
-var expectedDocIDToFilePath = map[int]string{
+var expectedDocIDToFilePath2 = map[int]string{
 	0:    "./mock_path/test.test",
 	12:   "ssljfsd",
 	64:   "sdlkajfsdflkdfjd",
@@ -199,27 +197,25 @@ var expectedDocIDToFilePath = map[int]string{
 	3674: "djdsl",
 }
 
-func TestBuildOnDisk(t *testing.T) {
-	utils.ClearOrCreatePersistedIndex("./saved")
-	var builder = NewOnDiskBuilder(3, onDiskReadingChannel, 2, &onDiskWaitGroup)
-	onDiskWaitGroup.Add(1)
+func TestBuildInMemory(t *testing.T) {
+	var builder = NewInMemoryBuilder(testInMemReadingChannel, 2, &testInMemWaitGroup)
+	builder.parentWaitGroup.Add(1)
 	go builder.Build()
-	for _, doc := range someDocuments {
+	for _, doc := range someDocuments2 {
 		builder.readingChannel <- doc
 	}
 	close(builder.readingChannel)
-	onDiskWaitGroup.Wait()
 	// NB: the tf-idf functionality is tested in ./indexes. Here we rely on it and keep
 	// scores as integers for clarity
-	for _, postingList := range expectedPostingLists {
-		postingList.TfIdf(len(someDocuments))
+	builder.parentWaitGroup.Wait()
+	for _, postingList := range expectedPostingLists2 {
+		postingList.TfIdf(len(someDocuments2))
 	}
 	index := builder.GetIndex()
 	// For terms that are in both indexes
-	for term, expectedPostingList := range expectedPostingLists {
+	for term, expectedPostingList := range expectedPostingLists2 {
 		postingList := index.GetPostingListsForTerms([]string{term})[term]
 		if !reflect.DeepEqual(postingList, expectedPostingList) {
-			// t.Errorf("\nFor %s:\n   - Should be %v\n   - Not %v\n", term, expectedPostingList, postingList)
 			for docID, expectedScore := range expectedPostingList {
 				score := postingList[docID]
 				if score != expectedScore {
@@ -229,9 +225,7 @@ func TestBuildOnDisk(t *testing.T) {
 		}
 	}
 	// Check the docID to path map
-	if !reflect.DeepEqual(index.GetDocIDToPath(), expectedDocIDToFilePath) {
-		t.Errorf("DocID to path is not correct. It should be %#v, not %#v", expectedDocIDToFilePath, index.GetDocIDToPath())
+	if !reflect.DeepEqual(index.GetDocIDToPath(), expectedDocIDToFilePath2) {
+		t.Errorf("DocID to path is not correct")
 	}
-	// Clear the folder after
-	os.RemoveAll("./saved")
 }

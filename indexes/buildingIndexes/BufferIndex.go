@@ -1,41 +1,43 @@
 package buildingIndexes
 
 import (
-	"github.com/rmulton/riw_project/utils"
-	"github.com/rmulton/riw_project/indexes"
-	"sync"
-	"log"
 	"io/ioutil"
+	"log"
+	"sync"
+
+	"github.com/rmulton/riw_project/indexes"
+	"github.com/rmulton/riw_project/utils"
 )
 
+// BufferIndex is used to build an index using the hard disk to extend the possible size of the index
 type BufferIndex struct {
-	Mux *sync.Mutex
-	bufferSize int
-	currentSize int
-	docCounter int
+	Mux            *sync.Mutex
+	bufferSize     int
+	currentSize    int
+	docCounter     int
 	writingChannel indexes.WritingChannel
-	index *indexes.Index
-
+	index          *indexes.Index
 }
 
+// NewBufferIndex returns a new BufferIndex
 func NewBufferIndex(bufferSize int, writingChannel indexes.WritingChannel) *BufferIndex {
 	var mux sync.Mutex
 	index := indexes.NewEmptyIndex()
 	return &BufferIndex{
 		writingChannel: writingChannel,
-		Mux: &mux,
-		bufferSize: bufferSize,
-		index : index,
+		Mux:            &mux,
+		bufferSize:     bufferSize,
+		index:          index,
 	}
 }
 
-// Used to fill the posting lists
+// AddDocToTerm is used to fill the posting lists
 func (buffer *BufferIndex) AddDocToTerm(docID int, term string) {
 	buffer.index.AddDocToTerm(docID, term)
 	buffer.currentSize++
 }
 
-// Add a new document in the index so that index keep trace of docID -> doc
+// AddDocToIndex adds a new document in the index so that index keep trace of docID -> doc
 func (buffer *BufferIndex) AddDocToIndex(docID int, docPath string) {
 	buffer.docCounter++
 	if buffer.currentSize >= buffer.bufferSize && buffer.bufferSize != -1 { // NB: This is a very important decision for the system. Using the biggest posting list might not be the best one.
@@ -44,6 +46,7 @@ func (buffer *BufferIndex) AddDocToIndex(docID int, docPath string) {
 	buffer.index.AddDocToIndex(docID, docPath)
 }
 
+// WriteBiggestPostingList moves the biggest posting list in memory to the disk to free some memory
 // /!\ MAYBE IT WOULD BE BETTER TO HAVE A ROUTINE WORKING ON WRITING THE POSTING LISTS
 // AND USE RWLock instead of Lock
 func (buffer *BufferIndex) WriteBiggestPostingList() {
@@ -62,7 +65,7 @@ func (buffer *BufferIndex) WriteBiggestPostingList() {
 	// Copy it to let other routines get access to the index, and remove it from the index
 	longestPostingList := postingLists[termWithLongestPostingList]
 	buffer.index.ClearPostingListFor(termWithLongestPostingList)
-	
+
 	buffer.currentSize -= max
 	buffer.Mux.Unlock()
 
@@ -71,7 +74,7 @@ func (buffer *BufferIndex) WriteBiggestPostingList() {
 
 // TODO : avoid code repition by buildingIndexes buffer.appendPostingListOnDisk(term)
 
-// Should be done by the buffer index instead
+// AppendToTermFile handles sending the BufferPostingList to be written on the writing channel
 func (buffer *BufferIndex) AppendToTermFile(postingList indexes.PostingList, term string, replace bool) {
 	// Here is the problem: the score is added to the file instead of replacing it
 	// TODO: Clean the mechanics that's below
@@ -84,6 +87,7 @@ func (buffer *BufferIndex) AppendToTermFile(postingList indexes.PostingList, ter
 	buffer.writingChannel <- bufferPostingList
 }
 
+// WritePostingListForTerms writes the posting lists of the input terms on the disk
 func (buffer *BufferIndex) WritePostingListForTerms(terms map[string]bool) {
 	for term, _ := range terms {
 		postingList, exists := buffer.index.GetPostingListForTerm(term)
@@ -94,8 +98,7 @@ func (buffer *BufferIndex) WritePostingListForTerms(terms map[string]bool) {
 	}
 }
 
-// When no more documents are to be read
-// Used only for InMemoryBuilder
+// WriteAllPostingLists writes all the posting lists in the index on the disk
 func (buffer *BufferIndex) WriteAllPostingLists() {
 	defer close(buffer.writingChannel)
 	for term, postingList := range buffer.index.GetPostingLists() {
@@ -107,20 +110,24 @@ func (buffer *BufferIndex) toTfIdf(corpusSize int) {
 	buffer.index.ToTfIdf(corpusSize)
 }
 
+// ToTfIdfTerms computes tf-idf scores from frequency scores
 func (buffer *BufferIndex) ToTfIdfTerms(terms map[string]bool) {
 	buffer.index.ToTfIdfTerms(buffer.docCounter, terms)
 }
 
+// WriteDocIDToFilePath writes the docID to filepath map on the disk
 func (buffer *BufferIndex) WriteDocIDToFilePath(path string) {
 	utils.WriteGob(path, buffer.index.GetDocIDToFilePath())
 }
 
+// GetPostingListForTerm returns the posting list of a term
 func (buffer *BufferIndex) GetPostingListForTerm(term string) (indexes.PostingList, bool) {
 	return buffer.index.GetPostingListForTerm(term)
 }
 
 /* Find out which terms are in memory, on disk or both */
 
+// CategorizeTerms find out which terms have their posting lists on the disk, in memory or both
 func (buffer *BufferIndex) CategorizeTerms() (map[string]bool, map[string]bool, map[string]bool) {
 	onDiskTerms := getOnDiskTerms()
 	inMemoryTerms := buffer.getInMemoryTerms()
@@ -131,12 +138,12 @@ func (buffer *BufferIndex) CategorizeTerms() (map[string]bool, map[string]bool, 
 func getOnDiskTerms() map[string]bool {
 	onDiskTerms := make(map[string]bool)
 	files, err := ioutil.ReadDir("./saved/postings/")
-    if err != nil {
-        log.Println(err)
-    }
-    for _, f := range files {
-			onDiskTerms[f.Name()] = true
-    }
+	if err != nil {
+		log.Println(err)
+	}
+	for _, f := range files {
+		onDiskTerms[f.Name()] = true
+	}
 	return onDiskTerms
 }
 
@@ -169,6 +176,7 @@ func separate(first map[string]bool, second map[string]bool) (map[string]bool, m
 	return onlyFirst, onlySecond, both
 }
 
+// GetDocCounter returns the number of documents that have been sent to the BufferIndex
 func (buffer *BufferIndex) GetDocCounter() int {
 	return buffer.docCounter
 }

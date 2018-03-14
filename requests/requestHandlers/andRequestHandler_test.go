@@ -1,28 +1,29 @@
 package requestHandlers
 
 import (
-	"sync"
-	"reflect"
-	"testing"
 	"math"
-	"github.com/rmulton/riw_project/indexBuilders/inMemoryBuilders"
+	"reflect"
+	"sync"
+	"testing"
+
 	"github.com/rmulton/riw_project/indexes"
 )
 
-var testInMemSomeDocuments = []indexes.Document {
-	indexes.Document {
-		ID: 0,
+// Warning : only use words normalized with snowball algorithm
+var testInMemSomeDocuments = []indexes.Document{
+	indexes.Document{
+		ID:   0,
 		Path: "./mock_path/test.test",
-		NormalizedTokens: []string {
+		NormalizedTokens: []string{
 			"blabla",
-			"bleble",
+			"blebl",
 			"blublu",
 		},
 	},
-	indexes.Document {
-		ID: 12,
+	indexes.Document{
+		ID:   12,
 		Path: "ssljfsd",
-		NormalizedTokens: []string {
+		NormalizedTokens: []string{
 			"aaa",
 			"bbb",
 			"ccc",
@@ -30,12 +31,12 @@ var testInMemSomeDocuments = []indexes.Document {
 			"blabla",
 		},
 	},
-	indexes.Document {
-		ID: 64,
+	indexes.Document{
+		ID:   64,
 		Path: "sdlkajfsdflkdfjd",
-		NormalizedTokens: []string {
+		NormalizedTokens: []string{
 			"aaa",
-			"bleble",
+			"blebl",
 			"lskdjfldsjf",
 			"dkjfdsljf",
 			"aaa",
@@ -45,19 +46,19 @@ var testInMemSomeDocuments = []indexes.Document {
 			"dkjfdsljf",
 		},
 	},
-	indexes.Document {
-		ID: 27,
+	indexes.Document{
+		ID:   27,
 		Path: "dlfkdsl",
-		NormalizedTokens: []string {
+		NormalizedTokens: []string{
 			"llll",
 			"blabla",
 			"blibli",
 		},
 	},
-	indexes.Document {
-		ID: 324,
+	indexes.Document{
+		ID:   324,
 		Path: "dflkjdsl",
-		NormalizedTokens: []string {
+		NormalizedTokens: []string{
 			"lalala",
 			"bebebe",
 			"toto",
@@ -66,18 +67,18 @@ var testInMemSomeDocuments = []indexes.Document {
 	},
 }
 
-var someRequests = map[string]indexes.PostingList {
-	"aaa bbb": indexes.PostingList {
-		12: (1 + math.Log(1.)) * math.Log(5./2.) + (1 + math.Log(1.)) * math.Log(5./1.),
+var someRequests = map[string]indexes.PostingList{
+	"aaa bbb": indexes.PostingList{
+		12: (1+math.Log(1.))*math.Log(5./2.) + (1+math.Log(1.))*math.Log(5./1.),
 	},
 }
 
 func TestAndRequestHandler(t *testing.T) {
 	// Get the index
-	// TODO: check how to avoid duplicate code with ./indexBuilders
+	// TODO: check how to avoid duplicate code with ./indexbuilders
 	readingChan := make(indexes.ReadingChannel)
 	var wg sync.WaitGroup
-	var builder = inMemoryBuilders.NewInMemoryBuilder(readingChan, 2, &wg)
+	var builder = inmemorybuilders.NewInMemoryBuilder(readingChan, 2, &wg)
 	wg.Add(1)
 	go builder.Build()
 	for _, doc := range testInMemSomeDocuments {
@@ -91,7 +92,7 @@ func TestAndRequestHandler(t *testing.T) {
 	// Test the request handler
 	andRequestHandler := NewAndRequestHandler(index)
 	for request, expectedResponse := range someRequests {
-		res := andRequestHandler.Request(request)
+		res := andRequestHandler.Request(request, []string{})
 		if !reflect.DeepEqual(*res, expectedResponse) {
 			t.Errorf("Response to %s should be %v, not %v", request, expectedResponse, *res)
 		}

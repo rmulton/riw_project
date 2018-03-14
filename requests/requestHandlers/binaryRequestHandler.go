@@ -2,6 +2,7 @@ package requestHandlers
 
 import (
 	"strings"
+
 	"github.com/rmulton/riw_project/indexes"
 	"github.com/rmulton/riw_project/indexes/requestableIndexes"
 	"github.com/rmulton/riw_project/normalizers"
@@ -9,18 +10,19 @@ import (
 
 type binaryRequestHandler struct {
 	index requestableIndexes.RequestableIndex
-
 }
 
+// NewBinaryRequestHandler returns a new binary request handler
 func NewBinaryRequestHandler(index requestableIndexes.RequestableIndex) *binaryRequestHandler {
 	return &binaryRequestHandler{index}
 }
 
-func (reqHandler *binaryRequestHandler) Request(request string) *indexes.PostingList {
+// Request returns the response to a request
+func (reqHandler *binaryRequestHandler) Request(request string, stopList []string) *indexes.PostingList {
 	conjClauses := strings.Split(request, "|")
 	res := make(indexes.PostingList)
 	for _, clause := range conjClauses {
-		accurateDocs := reqHandler.requestAnd(clause)
+		accurateDocs := reqHandler.requestAnd(clause, stopList)
 		if accurateDocs != nil {
 			res.MergeWith(*accurateDocs) // TODO: Check that there is no memory wasted
 		}
@@ -28,10 +30,10 @@ func (reqHandler *binaryRequestHandler) Request(request string) *indexes.Posting
 	return &res
 }
 
-func (reqHandler *binaryRequestHandler) requestAnd(request string) *indexes.PostingList {
-	terms := normalizers.Normalize(request, []string{})
+func (reqHandler *binaryRequestHandler) requestAnd(request string, stopList []string) *indexes.PostingList {
+	terms := normalizers.Normalize(request, stopList)
 	postingListsForTerms := reqHandler.index.GetPostingListsForTerms(terms)
-	
+
 	var min int
 	var bestTerm string
 	for i, term := range terms {
@@ -41,13 +43,13 @@ func (reqHandler *binaryRequestHandler) requestAnd(request string) *indexes.Post
 			bestTerm = term
 		}
 	}
-	
+
 	// Copy the shortest posting list
 	accurateDocs := make(indexes.PostingList)
 	for k, v := range postingListsForTerms[bestTerm] {
 		accurateDocs[k] = v
 	}
-	
+
 	// Add frequencies and remove inaccurate terms
 	for docID, _ := range accurateDocs {
 		for _, term := range terms {

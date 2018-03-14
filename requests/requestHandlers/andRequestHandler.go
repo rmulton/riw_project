@@ -10,12 +10,14 @@ type andRequestHandler struct {
 	index requestableIndexes.RequestableIndex
 }
 
+// NewAndRequestHandler returns a new and request handler
 func NewAndRequestHandler(index requestableIndexes.RequestableIndex) *andRequestHandler {
 	return &andRequestHandler{index}
 }
 
-func (reqHandler *andRequestHandler) Request(request string) *indexes.PostingList {
-	terms := normalizers.Normalize(request, []string{})
+// Request returns the response to a request
+func (reqHandler *andRequestHandler) Request(request string, stopList []string) *indexes.PostingList {
+	terms := normalizers.Normalize(request, stopList)
 	postingListsForTerms := reqHandler.index.GetPostingListsForTerms(terms)
 
 	var min int

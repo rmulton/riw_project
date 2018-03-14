@@ -12,6 +12,7 @@ import (
 	"github.com/rmulton/riw_project/utils"
 )
 
+// CACMReader is a reader for CACM collection
 type CACMReader struct {
 	collectionPath string
 	// WaitGroup for main program
@@ -23,6 +24,7 @@ type CACMReader struct {
 	stopList        []string
 }
 
+// NewCACMReader returns a new CACMReader
 func NewCACMReader(docs indexes.ReadingChannel, collectionPath string, routines int, parentWaitGroup *sync.WaitGroup) *CACMReader {
 	var mux sync.Mutex
 	sem := make(chan bool, routines)
@@ -41,7 +43,7 @@ func NewCACMReader(docs indexes.ReadingChannel, collectionPath string, routines 
 	return &reader
 }
 
-// TODO: Change it to Read(path)
+// Read handles the procedure to read the collection
 func (reader *CACMReader) Read() {
 	log.Print("Reading CACM collection")
 	// Close output channel when done, tell the main program that the thread is done when returns
@@ -92,6 +94,5 @@ func (reader *CACMReader) read(docID int, document string) {
 		Path:             documentPath,
 		NormalizedTokens: normalizedTokens,
 	}
-	// fmt.Printf("#%v", readDoc)
 	reader.Docs <- readDoc
 }

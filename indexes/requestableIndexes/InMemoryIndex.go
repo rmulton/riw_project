@@ -1,29 +1,22 @@
 package requestableIndexes
 
 import (
-	"github.com/rmulton/riw_project/utils"
 	"github.com/rmulton/riw_project/indexes"
-	"log"
 )
+
+// InMemoryIndex is a requestable index used for indexes built in memory
 type InMemoryIndex struct {
 	index *indexes.Index
 }
+
+// InMemoryIndexFromIndex returns an InMemoryIndex that contains information from the input index
 func InMemoryIndexFromIndex(index *indexes.Index) *InMemoryIndex {
 	return &InMemoryIndex{
 		index: index,
 	}
 }
-func InMemoryIndexFromFile(filePath string) *InMemoryIndex {
-	index := indexes.NewEmptyIndex()
-	err := utils.ReadGob("./saved/index.gob", &index)
-	if err != nil {
-		log.Println(err)
-	}
-	return &InMemoryIndex{
-		index: index,
-	}
-}
 
+// GetPostingListsForTerms returns the posting lists of some terms
 func (index *InMemoryIndex) GetPostingListsForTerms(terms []string) map[string]indexes.PostingList {
 	postingListsForTerms := make(map[string]indexes.PostingList)
 	for _, term := range terms {
@@ -33,6 +26,17 @@ func (index *InMemoryIndex) GetPostingListsForTerms(terms []string) map[string]i
 	return postingListsForTerms
 }
 
+// GetDocIDToPath returns the docID to filepath map
 func (index *InMemoryIndex) GetDocIDToPath() map[int]string {
 	return index.index.GetDocIDToFilePath()
+}
+
+// GetDocCounter returns the number of documents used to build the index
+func (index *InMemoryIndex) GetDocCounter() int {
+	return index.index.GetDocCounter()
+}
+
+// IsInTheIndex returns whether the term has a posting list in the index
+func (index *InMemoryIndex) IsInTheIndex(term string) bool {
+	return index.index.IsInTheIndex(term)
 }

@@ -9,9 +9,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/rmulton/riw_project/indexBuilders"
-	"github.com/rmulton/riw_project/indexBuilders/inMemoryBuilders"
-	"github.com/rmulton/riw_project/indexBuilders/onDiskBuilders"
+	"github.com/rmulton/riw_project/indexbuilders"
+	"github.com/rmulton/riw_project/indexbuilders/inmemorybuilders"
+	"github.com/rmulton/riw_project/indexbuilders/ondiskbuilders"
 	"github.com/rmulton/riw_project/indexes"
 	"github.com/rmulton/riw_project/indexes/requestableIndexes"
 	"github.com/rmulton/riw_project/readers"
@@ -19,6 +19,7 @@ import (
 	"github.com/rmulton/riw_project/utils"
 )
 
+// readInput reads the input from the command line
 func readInput(helpMessage string) string {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print(helpMessage)
@@ -26,6 +27,7 @@ func readInput(helpMessage string) string {
 	return text
 }
 
+// checkFolderExistsOrAskForAnother checks that the input path to the collection folder exists or ask for another one
 func checkFolderExistsOrAskForAnother(folder string, helpMessage string) string {
 	exists := utils.CheckPathExists(folder)
 	for !exists {
@@ -35,6 +37,7 @@ func checkFolderExistsOrAskForAnother(folder string, helpMessage string) string 
 	return folder
 }
 
+// buildIndex builds the index according to the configuration input from the user
 func buildIndex(dataFolder string, collection string, inMemoryIndex bool) requestableIndexes.RequestableIndex {
 	start := time.Now()
 	// Check that the given dataFolder exists or ask for another one
@@ -64,15 +67,15 @@ func buildIndex(dataFolder string, collection string, inMemoryIndex bool) reques
 	}
 	// Create the builder
 	// Clean "./saved" folder
-	var builder indexBuilders.IndexBuilder
+	var builder indexbuilders.IndexBuilder
 	if inMemoryIndex {
-		builder = inMemoryBuilders.NewInMemoryBuilder(
+		builder = inmemorybuilders.NewInMemoryBuilder(
 			readingChannel,
 			10,
 			&waitGroup,
 		)
 	} else {
-		builder = onDiskBuilders.NewOnDiskBuilder(
+		builder = ondiskbuilders.NewOnDiskBuilder(
 			1000000000,
 			readingChannel,
 			10,
@@ -103,13 +106,15 @@ func loadIndexFromDisk() requestableIndexes.RequestableIndex {
 	}
 }
 
-func getFlags() (string, bool, string, string, bool) {
+// getFlags parses the flags input from the command line
+func getFlags() (string, bool, string, string, bool, string) {
 	// Get the command line arguments
 	fromScratchFlag := flag.Bool("from_scratch", false, "Use -from_scratch flag if you want the builder to erase the persisted index.")
 	dataFolderFlag := flag.String("build_for", "", "Use -build flag to build or rebuild the index.")
 	inMemoryIndexFlag := flag.Bool("index_in_memory", false, "Use -index_in_memory flag if you want to keep the index builder from using the hard disk. Don't use this option if your collection is too big")
 	collectionFlag := flag.String("collection", "cacm", "Use -collection to choose which document collection to work on. For now, only \"stanford\" and \"cacm\" are working.")
 	requestTypeFlag := flag.String("request", "vectorial", "Use -requestType to choose which kind of request you want to use on the index. For now, \"binary\" and \"vectorial\" are implemented")
+	evaluateFlag := flag.String("evaluate", "", "Use -evaluate to give the program the path to cacm collection to evaluate")
 
 	// Get the input from command line arguments
 	flag.Parse()
@@ -118,6 +123,7 @@ func getFlags() (string, bool, string, string, bool) {
 	collection := *collectionFlag
 	requestType := *requestTypeFlag
 	fromScratch := *fromScratchFlag
+	evaluate := *evaluateFlag
 
 	// Check the command line arguments
 	// Check that the chosen collection's reader is implemented
@@ -132,15 +138,19 @@ func getFlags() (string, bool, string, string, bool) {
 		requestType = readInput(requestTypeDoesNotExistMsg)
 	}
 
-	return dataFolder, inMemoryIndex, collection, requestType, fromScratch
+	return dataFolder, inMemoryIndex, collection, requestType, fromScratch, evaluate
 }
 
 func main() {
 
-	log.Println("lala")
-
 	// Get the command line interface arguments
-	dataFolder, inMemoryIndex, collection, requestType, fromScratch := getFlags()
+	dataFolder, inMemoryIndex, collection, requestType, fromScratch, evaluate := getFlags()
+
+	// Evaluation primes
+	if evaluate != "" {
+		evaluateCacm(evaluate)
+		return
+	}
 
 	// Creating the index
 	var index requestableIndexes.RequestableIndex

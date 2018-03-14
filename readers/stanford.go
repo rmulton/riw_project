@@ -1,26 +1,29 @@
 package readers
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 	"sync"
-	"log"
+
+	"github.com/rmulton/riw_project/indexes"
 	"github.com/rmulton/riw_project/normalizers"
 	"github.com/rmulton/riw_project/utils"
-	"github.com/rmulton/riw_project/indexes"
 )
 
+// StanfordReader is a reader for any collection contained in a single documents, in which a document is a file
 type StanfordReader struct {
 	collectionPath string
 	// WaitGroup for main program
 	parentWaitGroup *sync.WaitGroup
-	Docs indexes.ReadingChannel
-	ReadCounter int
-	Mux sync.Mutex
-	sem chan bool
-	stopwords []string
+	Docs            indexes.ReadingChannel
+	ReadCounter     int
+	Mux             sync.Mutex
+	sem             chan bool
+	stopwords       []string
 }
 
+// NewStanfordReader returns a new StanfordReader
 func NewStanfordReader(docs indexes.ReadingChannel, collectionPath string, routines int, parentWaitGroup *sync.WaitGroup) *StanfordReader {
 	var mux sync.Mutex
 	sem := make(chan bool, routines)
@@ -108,18 +111,18 @@ func NewStanfordReader(docs indexes.ReadingChannel, collectionPath string, routi
 		"much",
 	}
 	reader := StanfordReader{
-		collectionPath: collectionPath,
+		collectionPath:  collectionPath,
 		parentWaitGroup: parentWaitGroup,
-		Docs: docs,
-		ReadCounter: 0,
-		Mux: mux,
-		sem: sem,
-		stopwords: stopwords,
+		Docs:            docs,
+		ReadCounter:     0,
+		Mux:             mux,
+		sem:             sem,
+		stopwords:       stopwords,
 	}
 	return &reader
 }
 
-// TODO: Change it to Read(path)
+// Read handles the procedure to read the collection
 func (reader *StanfordReader) Read() {
 	// Close output channel when done, tell the main program that the thread is done when returns
 	defer reader.parentWaitGroup.Done()
@@ -140,7 +143,7 @@ func (reader *StanfordReader) Read() {
 
 func (reader *StanfordReader) read(info os.FileInfo, path string) {
 	// Tell to the reader that the thread is done when read() returns
-	defer func() {<-reader.sem}()
+	defer func() { <-reader.sem }()
 	if !info.IsDir() {
 		// Read and update counter used to get the document ID
 		reader.Mux.Lock()
@@ -152,8 +155,8 @@ func (reader *StanfordReader) read(info os.FileInfo, path string) {
 		// Transform it to a list of normalized tokens
 		normalizedTokens := normalizers.Normalize(stringFile, reader.stopwords)
 		readDoc := indexes.Document{
-			ID: counter,
-			Path: path,
+			ID:               counter,
+			Path:             path,
 			NormalizedTokens: normalizedTokens,
 		}
 		reader.Docs <- readDoc

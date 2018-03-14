@@ -1,14 +1,16 @@
 package normalizers
 
 import (
-	"regexp"
 	"log"
+	"regexp"
+
 	"github.com/kljensen/snowball"
 )
 
+// Regex for a token
 var wordRegex = regexp.MustCompile(`[a-zA-Z0-9_#&%@\-\.]*`) // avoids having dots or slashes at the begining or the end of the name of the file
 
-// Get a normalized token list from a string
+// Normalize gets a normalized token list from a string
 func Normalize(paragraph string, stopwords []string) []string {
 	tokens := wordRegex.FindAllString(paragraph, -1)
 
@@ -29,7 +31,7 @@ func normalizeWords(words []string, stopWords []string) []string {
 
 // normalizeWord normalizes a single word
 func normalizeWord(word string, stopWords []string) string {
-	if !contains(stopWords, word) && !onlyDots(word){
+	if !contains(stopWords, word) && !onlyDots(word) {
 		stemed, err := snowball.Stem(word, "english", true)
 		if err != nil {
 			log.Println(err)

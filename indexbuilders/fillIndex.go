@@ -1,12 +1,14 @@
-package indexBuilders
+package indexbuilders
 
 import (
-	"sync"
 	"log"
+	"sync"
+
 	"github.com/rmulton/riw_project/indexes"
 	"github.com/rmulton/riw_project/indexes/buildingIndexes"
 )
 
+// FillIndex fills in an index using parsed documents sent on the reading channel
 func FillIndex(index buildingIndexes.BuildingIndex, readingChannel indexes.ReadingChannel, waitGroup *sync.WaitGroup) {
 	defer waitGroup.Done()
 	for doc := range readingChannel {

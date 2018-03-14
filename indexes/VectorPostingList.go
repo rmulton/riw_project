@@ -3,8 +3,6 @@ package indexes
 import (
 	"math"
 )
-// TODO : Should we move elsewhere the following functions ?
-// TODO : Should we juste have a function ToAngleScoresTo([]postingLists, request) ??
 
 // VectorPostingList is a docID -> (term -> score) map
 type VectorPostingList map[int]map[string]float64
@@ -19,7 +17,7 @@ type VectorPostingList map[int]map[string]float64
 // {
 // 	1: ["blabla": 3., "bleble": 4.]
 // }
-func MergeToVector(postingLists map[string]PostingList) VectorPostingList{
+func MergeToVector(postingLists map[string]PostingList) VectorPostingList {
 	vectorPostingList := make(VectorPostingList)
 	var i int
 	for term, postingList := range postingLists {
@@ -41,7 +39,9 @@ func MergeToVector(postingLists map[string]PostingList) VectorPostingList{
 func (vecPostingList VectorPostingList) ToAnglesTo(vector map[string]float64) PostingList {
 	output := make(PostingList)
 	for docID, docVector := range vecPostingList {
-		output[docID] = angle(docVector, vector)
+		angle := angle(docVector, vector)
+		percentage := (math.Acos(0) - angle) / math.Acos(0)
+		output[docID] = percentage
 	}
 	return output
 }
@@ -50,7 +50,7 @@ func angle(v1 map[string]float64, v2 map[string]float64) float64 {
 	n1 := norm(v1)
 	n2 := norm(v2)
 	s := scalar(v1, v2)
-	cos := s/(n1*n2)
+	cos := s / (n1 * n2)
 	angle := math.Acos(cos)
 	return angle
 }
@@ -58,7 +58,7 @@ func angle(v1 map[string]float64, v2 map[string]float64) float64 {
 func norm(v map[string]float64) float64 {
 	var norm float64
 	for _, coord := range v {
-		norm += coord*coord
+		norm += coord * coord
 	}
 	floatNorm := math.Sqrt(norm)
 	return floatNorm
@@ -67,7 +67,7 @@ func norm(v map[string]float64) float64 {
 func scalar(v1 map[string]float64, v2 map[string]float64) float64 {
 	var output float64
 	for term, score := range v1 {
-		output += score*v2[term]
+		output += score * v2[term]
 	}
 	return output
 }

@@ -15,6 +15,14 @@ go build
 
 You are good to go ! If you need data to test the program, you can try the example collection from Stanford's CS276 class [here](http://web.stanford.edu/class/cs276/pa/pa1-data.zip) or CACM's one [here](http://ir.dcs.gla.ac.uk/resources/test_collections/cacm/).
 
+NB: the response printer for CACM collection doesn't print the content of the documents yet !
+
+# Running the unit tests
+```sh
+# run the tests recursively
+go test ./...
+```
+
 # Design
 ## Priorities
 The main priority of this program is to have **the shortest response to request time**. A possible drawback could be a slower index building time.
@@ -45,7 +53,7 @@ Data goes through a pipeline :
 Reader -[BufferPostingList]-> IndexBuilder -[Index]-> RequestHandler -[PostingList]-> OutputFormater
 
 ## Structure
-## ./indexBuilders
+## ./indexbuilders
 A Builder interface must be implemented in order to give the building procedure for an index. The builders currently implemented are:
 - in memory builders: build the index in memory
 - on disk builders: use the hard disk to extend the maximum index size.

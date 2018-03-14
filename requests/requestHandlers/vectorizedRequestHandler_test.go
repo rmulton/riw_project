@@ -1,32 +1,47 @@
 package requestHandlers
 
 import (
-	"sync"
-	"reflect"
-	"testing"
 	"math"
-	"github.com/rmulton/riw_project/indexBuilders/inMemoryBuilders"
+	"reflect"
+	"sync"
+	"testing"
+
 	"github.com/rmulton/riw_project/indexes"
 )
 
-var someVecRequests = map[string]indexes.PostingList {
-	"aaa bbb": indexes.VectorPostingList {
-		12: map[string]float64 {
+// Warning: the request must be normalized,
+var someVecRequests = map[string]indexes.PostingList{
+	"aaa bbb": indexes.VectorPostingList{
+		12: map[string]float64{
 			"aaa": (1 + math.Log(1.)) * math.Log(5./2.),
 			"bbb": (1 + math.Log(1.)) * math.Log(5./1.),
 		},
-		64: map[string]float64 {
+		64: map[string]float64{
 			"aaa": (1 + math.Log(3.)) * math.Log(5./2.),
 		},
-	}.ToAnglesTo(map[string]float64 {"aaa": 1., "bbb": 1.,}),
+	}.ToAnglesTo(map[string]float64{"aaa": 1., "bbb": 1.}),
+
+	"lskdjfldsjf blebl aaa tutu": indexes.VectorPostingList{
+		0: map[string]float64{
+			"blebl": (1 + math.Log(1.)) * math.Log(5./2.),
+		},
+		12: map[string]float64{
+			"aaa": (1 + math.Log(1.)) * math.Log(5./2.),
+		},
+		64: map[string]float64{
+			"lskdjfldsjf": (1 + math.Log(1.)) * math.Log(5./1.),
+			"aaa":         (1 + math.Log(3.)) * math.Log(5./2.),
+			"blebl":       (1 + math.Log(1.)) * math.Log(5./2.),
+		},
+	}.ToAnglesTo(map[string]float64{"lskdjfldsjf": 1., "blebl": 1., "aaa": 1.}),
 }
 
 func TestVecRequestHandler(t *testing.T) {
 	// Get the index
-	// TODO: check how to avoid duplicate code with ./indexBuilders
+	// TODO: check how to avoid duplicate code with ./indexbuilders
 	readingChan := make(indexes.ReadingChannel)
 	var wg sync.WaitGroup
-	var builder = inMemoryBuilders.NewInMemoryBuilder(readingChan, 2, &wg)
+	var builder = inmemorybuilders.NewInMemoryBuilder(readingChan, 2, &wg)
 	wg.Add(1)
 	go builder.Build()
 	for _, doc := range testInMemSomeDocuments {
@@ -40,7 +55,7 @@ func TestVecRequestHandler(t *testing.T) {
 	// Test the request handler
 	vecRequestHandler := NewVectorizedRequestHandler(index)
 	for request, expectedResponse := range someVecRequests {
-		res := vecRequestHandler.Request(request)
+		res := vecRequestHandler.Request(request, []string{})
 		if !reflect.DeepEqual(*res, expectedResponse) {
 			t.Errorf("Response to %s should be %v, not %v", request, expectedResponse, *res)
 		}

@@ -1,9 +1,9 @@
 package outputFormaters
 
 import (
-	"math"
 	"fmt"
 	"sort"
+
 	"github.com/rmulton/riw_project/indexes"
 	"github.com/rmulton/riw_project/utils"
 )
@@ -14,25 +14,29 @@ type sortDocsOutputFormater struct {
 
 type scoresToDocs map[float64][]int
 
+// NewSortDocsOutputFormater returns a new SortDocsOutputFormater that format output
+// by sorting the documents according to their scores
 func NewSortDocsOutputFormater(docIDToPath map[int]string) *sortDocsOutputFormater {
 	return &sortDocsOutputFormater{
 		docIDToPath: docIDToPath,
 	}
 }
 
+// Output print the output for the user
 func (fmter *sortDocsOutputFormater) Output(res *indexes.PostingList) {
 	var rank int
-	scores, scoresToDocs := fmter.sort(res)
+	scores, scoresToDocs := Sort(*res)
+	fmt.Printf("\n> Found %d documents:\n\n", len(*res))
 	if scoresToDocs != nil && scores != nil {
 		for _, score := range scores {
 			for _, docID := range scoresToDocs[score] {
 				rank++
 				// TODO: move to vectorized requests
-				normalizedScore := score/math.Acos(0)*100
+				normalizedScore := score * 100
 				if rank <= 3 {
 					docPath := fmter.docIDToPath[docID]
 					content := utils.FileToString(docPath)
-					if len(content) > 400{
+					if len(content) > 400 {
 						content = content[:400]
 					} else if len(content) > 0 {
 						content = content[:len(content)-1]
@@ -48,13 +52,12 @@ func (fmter *sortDocsOutputFormater) Output(res *indexes.PostingList) {
 	}
 }
 
-func (fmter *sortDocsOutputFormater) sort(res *indexes.PostingList) ([]float64, scoresToDocs) {
+// Sort sorts the documents according to their scores
+func Sort(res indexes.PostingList) ([]float64, scoresToDocs) {
 	scores := make([]float64, 0)
 	scoresToDocs := make(scoresToDocs)
-	var docCounter int
 
-	for docID, score := range *res {
-		docCounter ++
+	for docID, score := range res {
 		_, exists := scoresToDocs[score]
 		if !exists {
 			scoresToDocs[score] = make([]int, 0)
@@ -64,7 +67,9 @@ func (fmter *sortDocsOutputFormater) sort(res *indexes.PostingList) ([]float64, 
 	}
 
 	sort.Sort(sort.Reverse(sort.Float64Slice(scores)))
-	fmt.Printf("\n> Found %d documents:\n\n", docCounter)
+	for _, scores := range scoresToDocs {
+		sort.Ints(scores)
+	}
 	return scores, scoresToDocs
-	
+
 }

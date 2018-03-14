@@ -7,6 +7,9 @@ import (
 	"os"
 )
 
+// 0777 is used to avoid access denied errors on linux when execution permission is not given
+var PERMISSION = os.FileMode(0777)
+
 // FileToString gets the content of a file as a string
 func FileToString(filePath string) string {
 	dat, err := ioutil.ReadFile(filePath)
@@ -23,7 +26,7 @@ func ClearFolder(folderPath string) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	err = os.MkdirAll(folderPath, 0644)
+	err = os.MkdirAll(folderPath, PERMISSION)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -44,11 +47,11 @@ func CheckPathExists(path string) bool {
 func ClearOrCreatePersistedIndex(indexPath string) {
 	fmt.Println("Clearing the previous index saved on the disk")
 	ClearFolder(indexPath)
-	err := os.MkdirAll(fmt.Sprintf("%s/postings", indexPath), 0644)
+	err := os.MkdirAll(fmt.Sprintf("%s/postings", indexPath), PERMISSION)
 	if err != nil {
 		fmt.Println(err)
 	}
-	err = os.MkdirAll(fmt.Sprintf("%s/meta", indexPath), 0644)
+	err = os.MkdirAll(fmt.Sprintf("%s/meta", indexPath), PERMISSION)
 	if err != nil {
 		fmt.Println(err)
 	}

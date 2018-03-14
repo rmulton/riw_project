@@ -2,6 +2,7 @@ package indexes
 
 import (
 	"math"
+
 	"github.com/rmulton/riw_project/utils"
 )
 
@@ -17,8 +18,9 @@ func PostingListFromFile(path string) (error, PostingList) {
 	return nil, postingList
 }
 
+// TfIdf transforms frequency scores into tf-idf scores
 func (postingList PostingList) TfIdf(corpusSize int) {
-	idf := float64(corpusSize)/float64(len(postingList)) // Inverse of the proportion of documents that contain the term
+	idf := float64(corpusSize) / float64(len(postingList)) // Inverse of the proportion of documents that contain the term
 	for docID, frqc := range postingList {
 		tf := frqc // Frequency of the term in the document
 		postingList[docID] = (1 + math.Log(tf)) * math.Log(idf)

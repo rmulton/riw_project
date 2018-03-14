@@ -1,4 +1,4 @@
-package indexBuilders
+package indexbuilders
 
 import (
 	"github.com/rmulton/riw_project/indexes/requestableIndexes"

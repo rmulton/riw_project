@@ -1,14 +1,16 @@
-package indexBuilders
+package indexbuilders
 
 import (
-	"sync"
-	"github.com/rmulton/riw_project/utils"
 	"fmt"
-	"os"
 	"log"
+	"os"
+	"sync"
+
 	"github.com/rmulton/riw_project/indexes"
+	"github.com/rmulton/riw_project/utils"
 )
 
+// CurrentPostingListOnDisk loads the posting list for a term currently saved on the disk
 func CurrentPostingListOnDisk(term string) indexes.PostingList {
 	termFile := fmt.Sprintf("./saved/postings/%s", term)
 	err, postingListSoFar := indexes.PostingListFromFile(termFile)
@@ -18,6 +20,7 @@ func CurrentPostingListOnDisk(term string) indexes.PostingList {
 	return postingListSoFar
 }
 
+// WritePostingLists writes the posting lists that arrive on the writing channel
 func WritePostingLists(writingChannel indexes.WritingChannel, waitGroup *sync.WaitGroup) {
 	defer waitGroup.Done()
 	for toWrite := range writingChannel {
@@ -37,10 +40,10 @@ func WritePostingLists(writingChannel indexes.WritingChannel, waitGroup *sync.Wa
 				// Merge the current posting list
 				postingListSoFar.MergeWith(toWrite.PostingList)
 			}
-			
+
 			// Write it to file
 			utils.WriteGob(termFile, postingListSoFar)
-		// Otherwise create it
+			// Otherwise create it
 		} else {
 			utils.WriteGob(termFile, toWrite.PostingList)
 		}

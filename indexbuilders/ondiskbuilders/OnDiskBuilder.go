@@ -1,4 +1,4 @@
-package onDiskBuilders
+package ondiskbuilders
 
 // TODO: Add folders handler
 import (
@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/rmulton/riw_project/indexBuilders"
+	"github.com/rmulton/riw_project/indexbuilders"
 	"github.com/rmulton/riw_project/indexes"
 	"github.com/rmulton/riw_project/indexes/buildingIndexes"
 	"github.com/rmulton/riw_project/indexes/requestableIndexes"
@@ -45,9 +45,9 @@ func (builder *OnDiskBuilder) Build() {
 	// Fill the index with the documents the reader sends
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go indexBuilders.FillIndex(builder.index, builder.readingChannel, &wg)
+	go indexbuilders.FillIndex(builder.index, builder.readingChannel, &wg)
 	// Start the disk writer
-	go indexBuilders.WritePostingLists(builder.writingChannel, &wg) // the block is copied to allow continuing operations on the builder
+	go indexbuilders.WritePostingLists(builder.writingChannel, &wg) // the block is copied to allow continuing operations on the builder
 	// Wait for the index filling to be done before finishing the index
 	wg.Wait()
 	wg.Add(1)
@@ -132,7 +132,7 @@ func (builder *OnDiskBuilder) mergeDiskMemoryThenTfIdfTerms(toMergeThenTfIdf map
 
 func (builder *OnDiskBuilder) mergeDiskMemoryThenTfIdfTerm(term string) {
 	postingList, _ := builder.index.GetPostingListForTerm(term)
-	postingListSoFar := indexBuilders.CurrentPostingListOnDisk(term)
+	postingListSoFar := indexbuilders.CurrentPostingListOnDisk(term)
 
 	// Here it is faster to load the persisted scores then get to tf-idf score rather than
 	// appending the score in memory to the file then use the functionnality to tf-idf a file
