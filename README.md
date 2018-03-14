@@ -2,22 +2,29 @@
 Project done during Céline Hudelot class on Information Retrieval.
 
 # Installation
+## Program
+1. Install golang [here](https://golang.org/doc/install)
+2. Download the project
 ```sh
 # clone this repository
-git clone https://github.com/rmulton/riw_project
+go get github.com/rmulton/riw_project
 # move to the folder
-cd riw_project
+cd $GOPATH/github.com/rmulton/riw_project
 # build the application
 go build
 # run the program
 ./riw_project -build_for <path_to_collection> -collection <collection_type>
 ```
+3. You are good to go !
 
-You are good to go ! If you need data to test the program, you can try the example collection from Stanford's CS276 class [here](http://web.stanford.edu/class/cs276/pa/pa1-data.zip) or CACM's one [here](http://ir.dcs.gla.ac.uk/resources/test_collections/cacm/).
+## Data
+If you need data to test the program, you can try the example collections
+- [Stanford's CS276 class collection](http://web.stanford.edu/class/cs276/pa/pa1-data.zip)
+- [CACM collection](http://ir.dcs.gla.ac.uk/resources/test_collections/cacm/)
 
 NB: the response printer for CACM collection doesn't print the content of the documents yet !
 
-# Running the unit tests
+## Running the unit tests
 ```sh
 # run the tests recursively
 go test ./...
