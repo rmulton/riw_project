@@ -11,7 +11,7 @@ go get github.com/rmulton/riw_project
 # Move to the project's folder
 cd $GOPATH/github.com/rmulton/riw_project
 # Build the program
-go build
+go build -o riw_project
 # Run the program
 ./riw_project -build_for <path_to_collection> -collection <collection_type>
 ```
