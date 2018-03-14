@@ -37,7 +37,7 @@ func (reqHandler *vectorizedRequestHandler) Request(request string, stopList []s
 
 	// Compute the angles between the request and the docs
 	vectorizedPostingList := indexes.MergeToVector(postingListsForTerms)
-	docScores := vectorizedPostingList.ToAnglesTo(reqVector)
+	docScores := vectorizedPostingList.ToScore(reqVector)
 	return &docScores
 }
 

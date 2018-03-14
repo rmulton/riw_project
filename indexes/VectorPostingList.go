@@ -33,10 +33,8 @@ func MergeToVector(postingLists map[string]PostingList) VectorPostingList {
 	return vectorPostingList
 }
 
-// ToAnglesTo gets the angles between the documents contained in a VectorPostingList and a document.
-// This is used to compute angles between a request and the documents containing at leat on of the
-// term in the request, for now.
-func (vecPostingList VectorPostingList) ToAnglesTo(vector map[string]float64) PostingList {
+// ToScore gets the scores from the angles between the documents contained in a VectorPostingList and a document.
+func (vecPostingList VectorPostingList) ToScore(vector map[string]float64) PostingList {
 	output := make(PostingList)
 	for docID, docVector := range vecPostingList {
 		angle := angle(docVector, vector)

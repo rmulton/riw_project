@@ -6,6 +6,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/rmulton/riw_project/indexbuilders/inmemorybuilders"
 	"github.com/rmulton/riw_project/indexes"
 )
 
